@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace DigitalMegaFlare
 {
@@ -13,25 +16,24 @@ namespace DigitalMegaFlare
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            //CreateHostBuilder(args).Build().Run();
 
+            // ここでもappsettings.jsonを読みたい
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true)
+                .Build();
 
-            //// ここでもappsettings.jsonを読みたい
-            //var config = new ConfigurationBuilder()
-            //    .SetBasePath(Directory.GetCurrentDirectory())
-            //    .AddJsonFile("appsettings.json", optional: true)
-            //    .Build();
+            // 使用するポート
+            var port = "http://0.0.0.0:" + config.GetValue<string>(SystemConstants.Port);
 
-            //// 使用するポート
-            //var port = "http://0.0.0.0:" + config.GetValue<string>(SystemConstants.Port);
+            // Webホスト作成
+            var host = CreateWebHostBuilder(args).UseUrls(port).Build();
 
-            //// Webホスト作成
-            //var host = CreateWebHostBuilder(args).UseUrls(port).Build();
-
-            //// 権限データがなければ作成する
+            // 権限データがなければ作成する
             //CreateRole(host);
 
-            //host.Run();
+            host.Run();
         }
 
         #region 雑な権限作成
@@ -71,24 +73,25 @@ namespace DigitalMegaFlare
         //}
         #endregion
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+        //public static IHostBuilder CreateHostBuilder(string[] args) =>
+        //    Host.CreateDefaultBuilder(args)
+        //        .ConfigureWebHostDefaults(webBuilder =>
+        //        {
+        //            webBuilder.UseStartup<Startup>();
+        //        });
 
-        //// Core1系で毎回書いていたコードをラップしている
-        //public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        //    WebHost.CreateDefaultBuilder(args)
-        //        .UseStartup<Startup>()
-        //        .ConfigureLogging((hostingContext, logging) => {
-        //            // NLog 以外で設定された Provider の無効化.
-        //            logging.ClearProviders();
-        //            // 最小ログレベルの設定.
-        //            logging.SetMinimumLevel(LogLevel.Trace);
-        //        })
-        //        // NLog を有効にする.
-        //        .UseNLog();
+        // Core1系で毎回書いていたコードをラップしている
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    // NLog 以外で設定された Provider の無効化.
+                    logging.ClearProviders();
+                    // 最小ログレベルの設定.
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
+                // NLog を有効にする.
+                .UseNLog();
     }
 }

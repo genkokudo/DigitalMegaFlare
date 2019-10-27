@@ -68,6 +68,8 @@ namespace DigitalMegaFlare
                     }
                 ));
             }
+            // デフォルトUI
+            // UI画面を自作しない場合、この設定でデフォルトのRegisterページUIが設定される
             // ユーザ認証に使用するデータを指定
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
