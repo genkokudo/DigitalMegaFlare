@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using DigitalMegaFlare.Settings;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalMegaFlare
 {
@@ -74,7 +75,9 @@ namespace DigitalMegaFlare
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
-            services.AddSignalR();      // SignalRを使用する
+
+            // SignalRを使用する
+            services.AddSignalR();
 
             //// TODO:いるかどうか分からない。いらなかったらノートの「設定ファイルの読み込み」ページを直す。
             //// DIするのに必要？RazorPagesでは多分いらない
@@ -102,12 +105,18 @@ namespace DigitalMegaFlare
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
 
-                //// アプリをサーバのサブディレクトリに配置する
-                //app.UsePathBase(Configuration.GetValue<string>(SystemConstants.PathBase));
+                // 最初無かったけどエラー出たので追加した
+                // アプリをサーバのサブディレクトリに配置する
+                app.UsePathBase(Configuration.GetValue<string>(SystemConstants.PathBase));
             }
 
             // HTTPをHTTPSにリダイレクトする
             app.UseHttpsRedirection();
+            app.Use((context, next) =>  // TODO:最初書いてなかったけど多分必要
+            {
+                context.Request.Scheme = "https";
+                return next();
+            });
 
             // 静的ファイルのルーティング設定
             // UsePathBaseの後に書かなければならない
@@ -115,7 +124,7 @@ namespace DigitalMegaFlare
             // /wwwroot/css/site.css というファイルに対しては http://..../css/site.css という URL でアクセスを行うことができる。
             app.UseStaticFiles();
 
-            app.UseRouting();
+            app.UseRouting();   // 2.2には無かったね
 
             // ユーザ認証を行う
             app.UseAuthentication();
@@ -137,6 +146,7 @@ namespace DigitalMegaFlare
             //// これをUseMvc()より前に書くと、クライアントに提供するCookieが渡されないのでセッションが維持できない。
             //app.UseCookiePolicy();
 
+            // 2.2と違うね？
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
