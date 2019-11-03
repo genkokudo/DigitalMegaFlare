@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Migrations\" />
-    <Folder Include="Pages\HtmlToDom\" />
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 
