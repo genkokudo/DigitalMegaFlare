@@ -20,6 +20,8 @@ namespace DigitalMegaFlare
 {
     public class Startup
     {
+        //public const string RootsName = "default";
+        //public const string RootsTemplate = "{controller=Home}/{action=Index}/{id?}";
         /// <summary>
         /// 環境変数を取得するのに使用
         /// </summary>
@@ -102,8 +104,11 @@ namespace DigitalMegaFlare
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                // HSTS(HTTP Strict Transport Security Protocol)はデフォルト設定で30日
                 app.UseHsts();
+
+                //// 指定した URL でパイプラインを再実行するので UseRouting の前に呼ぶ必要がある
+                //app.UseStatusCodePagesWithReExecute("/Error/Index", "?statusCode={0}");
 
                 // 最初無かったけどエラー出たので追加した
                 // アプリをサーバのサブディレクトリに配置する
@@ -112,50 +117,47 @@ namespace DigitalMegaFlare
 
             // HTTPをHTTPSにリダイレクトする
             app.UseHttpsRedirection();
-            app.Use((context, next) =>  // TODO:最初書いてなかったけど多分必要
-            {
-                context.Request.Scheme = "https";
-                return next();
-            });
 
             // 静的ファイルのルーティング設定
             // UsePathBaseの後に書かなければならない
             // /wwwroot 配下のファイルに対して直接 URL アクセスが可能となる
             // /wwwroot/css/site.css というファイルに対しては http://..../css/site.css という URL でアクセスを行うことができる。
+            // UseRoutingの前に書かなければならない
             app.UseStaticFiles();
 
-            app.UseRouting();   // 2.2には無かったね
-
-            // ユーザ認証を行う
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            // TODO:多分いらない？
-            //// RazorPagesを使用する設定
-            //// ルーティング設定
-            //app.UseMvc(routes =>
+            //app.Use((context, next) =>  // TODO:最初書いてなかったけど多分必要
             //{
-            //    routes.MapRoute(
-            //        name: RootsName,    // ルート名
-            //        template: RootsTemplate);    // URIパターン(デフォルト値付きで設定、defalts:パラメータは使用しない)
-            //                                     // id?は任意に設定できるパラメータとなる
+            //    context.Request.Scheme = "https";
+            //    return next();
             //});
 
-            // ポリシーで分岐するときに必要？しないなら削除
-            //// cookieポリシーを使用する
-            //// これをUseMvc()より前に書くと、クライアントに提供するCookieが渡されないのでセッションが維持できない。
-            //app.UseCookiePolicy();
+            // ここでルートのマッチングが行われ、結果は HttpContext にセット
+            app.UseRouting();
 
-            // 2.2と違うね？
+            // ユーザ認証を行う
+            // 認証・認可はルーティングの結果が必要
+            app.UseAuthentication();
+            app.UseAuthorization();
+            //// CORS もルーティングの結果が必要
+            //app.UseCors();
+
+            // cookieポリシーを使用する
+            // これをUseMvc()より前に書くと、クライアントに提供するCookieが渡されないのでセッションが維持できない。
+            app.UseCookiePolicy();
+
+            // 2.2のEndpointRoutingと違う
+            // パイプラインで明示的に UseRouting と UseEndpoints を呼び出す必要があります。
+            // それぞれのメソッドはルートのマッチングを行うタイミングと、実際にリクエストの処理を行うタイミングを表しています。
             app.UseEndpoints(endpoints =>
             {
+                //endpoints.MapHub<ChatHub>("/chat");
+                endpoints.MapControllerRoute(
+                        name: "default",
+                        pattern: "{controller=Home}/{action=Index}/{id?}"
+                    );
                 endpoints.MapRazorPages();
             });
 
-            //app.UseSignalR(routes =>
-            //{
-            //    routes.MapHub<ChatHub>("/chatHub");
-            //});
         }
     }
 }
