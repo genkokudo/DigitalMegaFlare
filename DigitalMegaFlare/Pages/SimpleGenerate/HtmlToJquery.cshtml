@@ -6,3 +6,21 @@
 
 <h1>jQuery作成サービス</h1>
 
+<hr />
+    <p>
+        ああああ
+    </p>
+<hr />
+<form asp-action="Trans">
+    <ul>
+        <li>簡潔に書くように心がけましょう</li>
+        <li>見やすいフォーマットを工夫しましょう</li>
+        <li>Markdownが使用できます（表示は詳細画面）</li>
+    </ul>
+    <textarea placeholder="HTMLタグ入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <div class="form-group">
+        <input type="submit" value="保存" class="btn btn-primary" />
+    </div>
+
+    <textarea placeholder="出力結果" asp-for="Output" class="form-control" TextMode="multiline" rows="15"></textarea>
+</form>

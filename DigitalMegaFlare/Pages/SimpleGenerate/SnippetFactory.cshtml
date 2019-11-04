@@ -6,3 +6,15 @@
 
 <h1>スニペット作成サービス</h1>
 
+<hr />
+
+<hr />
+<form asp-action="Edit">
+    <ul>
+        <li>簡潔に書くように心がけましょう</li>
+        <li>見やすいフォーマットを工夫しましょう</li>
+        <li>Markdownが使用できます（表示は詳細画面）</li>
+    </ul>
+    <textarea placeholder="HTMLタグ入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <textarea placeholder="出力結果" asp-for="Output" class="form-control" TextMode="multiline" rows="15"></textarea>
+</form>

@@ -9,6 +9,10 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
 {
     public class SnippetFactoryModel : PageModel
     {
+        [BindProperty]
+        public string Input { get; set; }
+        [BindProperty]
+        public string Output { get; set; }
         public void OnGet()
         {
 

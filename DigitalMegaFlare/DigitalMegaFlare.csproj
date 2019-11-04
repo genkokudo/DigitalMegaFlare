@@ -29,6 +29,11 @@
   </ItemGroup>
 
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\HtmlToDom\HtmlToDom\HtmlToDom.csproj" />
+  </ItemGroup>
+
+
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>
