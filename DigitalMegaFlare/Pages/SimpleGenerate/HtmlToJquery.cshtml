@@ -11,7 +11,7 @@
         ああああ
     </p>
 <hr />
-<form asp-action="Trans">
+<form method="post">
     <ul>
         <li>簡潔に書くように心がけましょう</li>
         <li>見やすいフォーマットを工夫しましょう</li>
@@ -19,8 +19,8 @@
     </ul>
     <textarea placeholder="HTMLタグ入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
     <div class="form-group">
-        <input type="submit" value="保存" class="btn btn-primary" />
+        <input asp-page-handler="Trans" type="submit" value="変換" class="btn btn-primary" title="変換する"/>
     </div>
 
-    <textarea placeholder="出力結果" asp-for="Output" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <textarea placeholder="出力結果" class="form-control" TextMode="multiline" rows="15" readonly>@ViewData["Output"]</textarea>
 </form>

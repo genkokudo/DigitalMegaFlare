@@ -12,15 +12,15 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
     {
         [BindProperty]
         public string Input { get; set; }
-        [BindProperty]
-        public string Output { get; set; }
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            return Page();
+        }
+        public IActionResult OnPostTrans()
+        {
+            ViewData["Output"] = Trans.ToJQuery(Input);
+            return Page();
+        }
 
-        }
-        public void OnTrans()
-        {
-            Output = Trans.ToJQuery(Input);
-        }
     }
 }
