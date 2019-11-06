@@ -7,14 +7,26 @@
 <h1>スニペット作成サービス</h1>
 
 <hr />
-
+<h5>■これは何？■</h5>
+<p>VisualStudioのコードスニペットファイルを作成します。</p>
+<h5>■使い方は？■</h5>
+<p>テンプレートにしたいものをペタっと貼ります。</p>
+<p>XML生成ボタンを押します。</p>
+<p>良ければダウンロードボタンでファイルを取得します。</p>
+<h5>■これから実装するもの■</h5>
+<p>めっちゃたくさんあるので、実装順は考えよう。</p>
+<p>1つ要素追加できれば後は単純作業のはず</p>
 <hr />
-<form asp-action="Edit">
+<form method="post">
     <ul>
-        <li>簡潔に書くように心がけましょう</li>
-        <li>見やすいフォーマットを工夫しましょう</li>
-        <li>Markdownが使用できます（表示は詳細画面）</li>
+        <li>作ったXMLファイルはここに保存しましょう。</li>
+        <li>C:\Users\(username)\Documents\Visual Studio 2019\Code Snippets\Visual C#\My Code Snippets</li>
     </ul>
-    <textarea placeholder="HTMLタグ入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
-    <textarea placeholder="出力結果" asp-for="Output" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <textarea placeholder="テンプレート入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <div class="form-group">
+        <input asp-page-handler="GenerateXml" type="submit" value="XML生成" class="btn btn-primary" title="XML生成" />
+        <input asp-page-handler="Download" type="submit" value="ダウンロード" class="btn btn-primary" title="ダウンロード" />
+    </div>
+
+    <textarea placeholder="出力結果" class="form-control" TextMode="multiline" rows="15" readonly>@ViewData["Output"]</textarea>
 </form>
