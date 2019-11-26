@@ -30,7 +30,7 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\HtmlToDom\HtmlToDom\HtmlToDom.csproj" />
+    <ProjectReference Include="..\..\Mintea\HtmlToDom\Mintea.csproj" />
   </ItemGroup>
 
 
