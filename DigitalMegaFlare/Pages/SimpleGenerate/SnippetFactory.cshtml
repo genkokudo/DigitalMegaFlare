@@ -16,13 +16,20 @@
 <h5>■これから実装するもの■</h5>
 <p>めっちゃたくさんあるので、実装順は考えよう。</p>
 <p>1つ要素追加できれば後は単純作業のはず</p>
+<ul>
+    <li>作ったXMLファイルはここに保存しましょう。</li>
+    <li>C:\Users\(username)\Documents\Visual Studio 2019\Code Snippets\Visual C#\My Code Snippets</li>
+</ul>
 <hr />
 <form method="post">
-    <ul>
-        <li>作ったXMLファイルはここに保存しましょう。</li>
-        <li>C:\Users\(username)\Documents\Visual Studio 2019\Code Snippets\Visual C#\My Code Snippets</li>
-    </ul>
-    <textarea placeholder="テンプレート入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <label>ヘッダ要素</label>
+    <input placeholder="作者" asp-for="Input.Author" class="form-control" />
+    @*<input placeholder="作者" asp-for="Input.Author" class="form-control" />
+    <input placeholder="作者" asp-for="Input.Author" class="form-control" />
+    <input placeholder="作者" asp-for="Input.Author" class="form-control" />
+    <input placeholder="作者" asp-for="Input.Author" class="form-control" />
+    <input placeholder="作者" asp-for="Input.Author" class="form-control" />*@
+    <textarea placeholder="テンプレート入力" asp-for="Input.Code" class="form-control" TextMode="multiline" rows="15"></textarea>
     <div class="form-group">
         <input asp-page-handler="GenerateXml" type="submit" value="XML生成" class="btn btn-primary" title="XML生成" />
         <input asp-page-handler="Download" type="submit" value="ダウンロード" class="btn btn-primary" title="ダウンロード" />
