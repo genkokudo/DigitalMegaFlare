@@ -7,21 +7,29 @@
 <h1>jQuery作成サービス</h1>
 
 <hr />
-<h5>使い方</h5>
-<p>適当に入れ子になっているHTMLを貼ります。</p>
-<p>変換ボタンを押します。</p>
-<p>そのHTMLを生成するjQueryが出力されます。</p>
-<p>BRタグなどは無視されます。</p>
-<p>生成される変数名は重複しないように連番が付きます。</p>
-<p>現在の所、タグ内のStyle要素は無視されます。</p>
-<p>現在の所、タグ内のonなんとかイベントは無視されます。</p>
+<p>
+    <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+        使い方
+    </button>
+</p>
+<div class="collapse" id="collapseExample">
+    <div class="card card-body">
+        <p>適当に入れ子になっているHTMLを貼ります。</p>
+        <p>変換ボタンを押します。</p>
+        <p>そのHTMLを生成するjQueryが出力されます。</p>
+        <p>BRタグなどは無視されます。</p>
+        <p>生成される変数名は重複しないように連番が付きます。</p>
+        <p>現在の所、タグ内のStyle要素は無視されます。</p>
+        <p>現在の所、タグ内のonなんとかイベントは無視されます。</p>
+    </div>
+</div>
 <hr />
 <form method="post">
     <ul>
         <li>生成し終わったら、分かりやすい変数名に改めましょう。</li>
         <li>タグ内の要素と出力結果で過不足が無いか確認しましょう。（やっつけで作ったので）</li>
     </ul>
-    <textarea placeholder="HTMLタグ入力" asp-for="Input" class="form-control" TextMode="multiline" rows="15"></textarea>
+    <textarea placeholder="HTMLタグ入力" asp-for="Input" class="form-control" TextMode="multiline" rows="4"></textarea>
     <div class="form-group">
         <input asp-page-handler="Trans" type="submit" value="変換" class="btn btn-primary" title="変換する" />
     </div>
