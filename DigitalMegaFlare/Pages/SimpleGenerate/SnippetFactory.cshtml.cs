@@ -16,18 +16,32 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         [BindProperty]
         public string Output { get; set; }
 
+        // TODO:クッキー
+        private const string cKey = "TestKey";
+        private string cValue = "TestValue";
         public IActionResult OnGetAsync()
         {
             // TODO:クッキーから読めないかなあー
+            HttpContext.Response.Cookies.Append(cKey, cValue);
+
+            // 画面項目を設定
             Input = new Snippet();
             return Page();
         }
 
+        /// <summary>
+        /// XML生成
+        /// </summary>
+        /// <returns></returns>
         public IActionResult OnPostGenerateXmlAsync()
         {
             return Page();
         }
 
+        /// <summary>
+        /// ダウンロード
+        /// </summary>
+        /// <returns></returns>
         public IActionResult OnPostDownloadAsync()
         {
             return Page();
