@@ -33,6 +33,7 @@
     <div class="form-group">
         <input asp-page-handler="Trans" type="submit" value="変換" class="btn btn-primary" title="変換する" />
     </div>
-
-    <textarea placeholder="出力結果" class="form-control" TextMode="multiline" rows="15" readonly>@ViewData["Output"]</textarea>
+    <div class="col-8">
+        <textarea id="Out" placeholder="出力結果" class="form-control" TextMode="multiline" rows="10" readonly>@ViewData["Output"]</textarea>
+    </div>
 </form>
