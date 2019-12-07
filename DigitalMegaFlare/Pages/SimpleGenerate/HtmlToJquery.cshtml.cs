@@ -18,7 +18,13 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         }
         public IActionResult OnPostTrans()
         {
-            ViewData["Output"] = Trans.ToJQuery(Input);
+            try
+            {
+                ViewData["Output"] = Trans.ToJQuery(Input);
+            }catch(Exception e)
+            {
+                ViewData["ErrorMessage"] = e.Message;
+            }
             return Page();
         }
 
