@@ -54,6 +54,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         {
             // TODO:Input.DelimiterDeleteFlagsがtrueだったらスルー
             // TODO:Input.Importsが""だったらスルー
+            // TODO:functionがNoneだったらスルー
             var generator = new SnippetGenerator();
             var xml = generator.MakeSnippetXml(Input);
             var output = xml.ToString();
