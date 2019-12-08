@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DigitalMegaFlare.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Mintea.SnippetGenerator;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate
 {
@@ -35,6 +36,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         /// <returns></returns>
         public IActionResult OnPostGenerateXmlAsync()
         {
+            var generator = new SnippetGenerator();
+            ViewData["Output"] = generator.MakeSnippetXml(Input).ToString();
             return Page();
         }
 
@@ -44,6 +47,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         /// <returns></returns>
         public IActionResult OnPostDownloadAsync()
         {
+            var generator = new SnippetGenerator();
+            Output = generator.MakeSnippetXml(Input).ToString();
             return Page();
         }
     }
