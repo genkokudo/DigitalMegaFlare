@@ -126,19 +126,13 @@
                 <!-- TODO:jQuery関数化すること -->
                 <tbody id="TbodyDeclaration0">
                     <tr>
-                        <td><input placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
+                        <td><input id="InputDeclarationId0" placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
                         <td><input placeholder="プロパティの型" asp-for="Input.Declarations[0].ToolTip" class="form-control" /></td>
                         <td><input placeholder="int" asp-for="Input.Declarations[0].Default" class="form-control" /></td>
                         <td><select asp-for="Input.Declarations[0].Function" asp-items="Html.GetEnumSelectList(typeof (Function))" class="form-control"></select></td>
                         <td><input placeholder="aaaa" asp-for="Input.Declarations[0].FunctionValue" class="form-control" /></td>
                         <td>
                             <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
-                            <!-- 削除フラグDelimiterDeleteFlags -->
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input id="InputDelimiterDeleteFlag0" class="form-check-input" asp-for="Input.DelimiterDeleteFlags[0]" />
-                                </label>
-                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -173,6 +167,24 @@
                         <td><button data-index="1" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
                     </tr>
                 </tbody>
+                <tbody id="TbodyImport2">
+                    <tr>
+                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[2]" class="form-control" /></td>
+                        <td><button data-index="2" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
+                    </tr>
+                </tbody>
+                <tbody id="TbodyImport3">
+                    <tr>
+                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[3]" class="form-control" /></td>
+                        <td><button data-index="3" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
+                    </tr>
+                </tbody>
+                <tbody id="TbodyImport4">
+                    <tr>
+                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[4]" class="form-control" /></td>
+                        <td><button data-index="4" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
@@ -190,17 +202,15 @@
         function aaaaFunction() {
         };
 
-        // TODO:追加するならば、次の番号を得る必要があるが？どうする？→tbodyの数を数える
-
         // 追加ボタン
         $('#ButtonAddDeclaration').on('click', function () {
-            alert('ButtonAddDeclaration');
-            // $('#TableTemplate')のtbodyの数を数える
-
+            // TODO:$('#TableTemplate')のtbodyの数を数える、非表示含む
+            var count = $('#TableTemplate').children('tbody').length;
+            alert('ButtonAddDeclaration' + count);
             // 要素を追加
 //                <tbody id="TbodyDeclaration0">
 //                    <tr>
-//                        <td><input placeholder="type" class="form-control" type="text" id="Input_Declarations_0__Id" name="Input.Declarations[0].Id" value="" /></td>
+//                        <td><input id="InputDeclarationId0" placeholder="type" class="form-control" type="text" name="Input.Declarations[0].Id" value="" /></td>
 //                        <td><input placeholder="プロパティの型" class="form-control" type="text" id="Input_Declarations_0__ToolTip" name="Input.Declarations[0].ToolTip" value="" /></td>
 //                        <td><input placeholder="int" class="form-control" type="text" id="Input_Declarations_0__Default" name="Input.Declarations[0].Default" value="" /></td>
 //                        <td><select class="form-control" id="Input_Declarations_0__Function" name="Input.Declarations[0].Function"><option value="0">None</option>
@@ -211,35 +221,25 @@
 //                        <td><input placeholder="aaaa" class="form-control" type="text" id="Input_Declarations_0__FunctionValue" name="Input.Declarations[0].FunctionValue" value="" /></td>
 //                        <td>
 //                            <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
-//                            <!-- 削除フラグDelimiterDeleteFlags -->
-//                            <div class="form-group form-check">
-//                                <label class="form-check-label">
-//                                    <input id="InputDelimiterDeleteFlag0" class="form-check-input" type="checkbox" data-val="true" data-val-required="The Boolean field is required." name="Input.DelimiterDeleteFlags[0]" value="true" />
-//                                </label>
-//                            </div>
 //                        </td>
 //                    </tr>
 //                </tbody>
+
             //$('#TableTemplate') 
             //    .append(????); 
         });
 
         // 追加ボタン
         $('#ButtonAddImport').on('click', function () {
-            alert('ButtonAddImport');
-            // $('#TableImport')のtbodyの数を数える
+            // TODO:$('#TableImport')のtbodyの数を数える、非表示含む
+            var count = $('#TableImport').children('tbody').length;
+            alert('ButtonAddImport' + count);
 
             // 要素を追加
                 //<tbody id="TbodyImport0">
                 //    <tr>
                 //        <td><input id="InputImport0" placeholder="System.Data" class="form-control" type="text" name="Input.Imports[0]" value="" /></td>
                 //        <td><button data-index="0" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                //    </tr>
-                //</tbody>
-                //<tbody id="TbodyImport1">
-                //    <tr>
-                //        <td><input id="InputImport1" placeholder="System.Data" class="form-control" type="text" name="Input.Imports[1]" value="" /></td>
-                //        <td><button data-index="1" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
                 //    </tr>
                 //</tbody>
 
@@ -253,7 +253,7 @@
         $('button[name=ButtonDeleteDeclaration]').on('click', function () {
             var index = $(this).data('index');
             $('#TbodyDeclaration' + index).addClass('d-none');
-            $('#InputDelimiterDeleteFlag' + index).attr('checked', true);  // フラグで削除したことにする
+            $('#InputDeclarationId' + index).val('');
         });
 
         // 削除ボタン

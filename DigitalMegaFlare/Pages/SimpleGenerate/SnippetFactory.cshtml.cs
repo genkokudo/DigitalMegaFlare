@@ -52,9 +52,12 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
 
         private string SetOutput()
         {
-            // TODO:Input.DelimiterDeleteFlagsがtrueだったらスルー
-            // TODO:Input.Importsが""だったらスルー
-            // TODO:functionがNoneだったらスルー
+            // Input.Declaration.Idが""だったらスルー
+            Input.Declarations.RemoveAll(x => string.IsNullOrWhiteSpace(x.Id));
+
+            // Input.Importsが""だったらスルー
+            Input.Imports.RemoveAll(x => string.IsNullOrWhiteSpace(x));
+
             var generator = new SnippetGenerator();
             var xml = generator.MakeSnippetXml(Input);
             var output = xml.ToString();
