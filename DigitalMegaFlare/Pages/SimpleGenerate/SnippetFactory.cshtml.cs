@@ -36,8 +36,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         /// <returns></returns>
         public IActionResult OnPostGenerateXmlAsync()
         {
-            var generator = new SnippetGenerator();
-            ViewData["Output"] = generator.MakeSnippetXml(Input).ToString();
+            SetOutput();
             return Page();
         }
 
@@ -47,9 +46,19 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         /// <returns></returns>
         public IActionResult OnPostDownloadAsync()
         {
+            string output = SetOutput();
+            return File(System.Text.Encoding.UTF8.GetBytes(output), "application/xml", Input.Title + ".snippet");
+        }
+
+        private string SetOutput()
+        {
+            // TODO:Input.DelimiterDeleteFlagsがtrueだったらスルー
+            // TODO:Input.Importsが""だったらスルー
             var generator = new SnippetGenerator();
-            Output = generator.MakeSnippetXml(Input).ToString();
-            return Page();
+            var xml = generator.MakeSnippetXml(Input);
+            var output = xml.ToString();
+            ViewData["Output"] = output;
+            return output;
         }
     }
 }

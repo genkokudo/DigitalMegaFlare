@@ -95,44 +95,51 @@
             <div class="row">
                 <div class="col-4 d-flex align-items-center">テンプレート内変数</div>
                 <div class="col-8">
-                    <button type="button" class="btn btn-success float-right mx-3">追加</button>
+                    <button id="ButtonAddDeclaration" type="button" class="btn btn-success float-right mx-3">追加</button>
                     <button type="button" class="btn btn-info float-right mx-3" data-toggle="collapse" data-target="#collapseDeclarations" aria-expanded="false" aria-controls="collapseKind">
-                        変数について
+                        適用関数について
                     </button>
                 </div>
             </div>
             <div class="collapse" id="collapseDeclarations">
                 <div class="card card-body">
-                    <p>種類によってスニペットの呼び出せる場所が変わります。</p>
+                    <p>変数に対し関数を適用します。</p>
                     <ol>
-                        <li>MethodBody<ol>処理のみ：メソッドの内部で使用する</ol></li>
-                        <li>MethodDecl<ol>メソッド宣言含む：クラスの中、メソッドの外で使用する</ol></li>
-                        <li>TypeDecl<ol>型：クラスの中、メソッドの外で使用する</ol></li>
-                        <li>File<ol>完全なコードファイル：単体でコードファイル、名前空間内に使用する</ol></li>
-                        <li>Any<ol>どこにでも使用できる</ol></li>
+                        <li>None<ol>関数を適用しません</ol></li>
+                        <li>GenerateSwitchCases<ol>Switch文のCaseを生成する。要引数：他のリテラルの変数名を指定（リテラルの型は列挙体）</ol></li>
+                        <li>ClassName<ol>スニペット導入するクラス名を設定する、引数なし</ol></li>
+                        <li>SimpleTypeName<ol>引数の型名を最も単純な形にする、要引数：型名を指定</ol></li>
                     </ol>
                 </div>
             </div>
             <table class="table table-sm table-hover" id="TableTemplate">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>ToolTip</th>
-                        <th>Default</th>
-                        <th>Function</th>
-                        <th>FunctionValue</th>
+                        <th>変数名</th>
+                        <th>説明</th>
+                        <th>デフォルト値</th>
+                        <th>適用関数</th>
+                        <th>適用関数の引数</th>
                         <th>削除</th>
                     </tr>
                 </thead>
                 <!-- TODO:jQuery関数化すること -->
-                <tbody>
+                <tbody id="TbodyDeclaration0">
                     <tr>
                         <td><input placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
                         <td><input placeholder="プロパティの型" asp-for="Input.Declarations[0].ToolTip" class="form-control" /></td>
                         <td><input placeholder="int" asp-for="Input.Declarations[0].Default" class="form-control" /></td>
                         <td><select asp-for="Input.Declarations[0].Function" asp-items="Html.GetEnumSelectList(typeof (Function))" class="form-control"></select></td>
                         <td><input placeholder="aaaa" asp-for="Input.Declarations[0].FunctionValue" class="form-control" /></td>
-                        <td><button type="button" class="btn btn-danger">×</button></td>
+                        <td>
+                            <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
+                            <!-- 削除フラグDelimiterDeleteFlags -->
+                            <div class="form-group form-check">
+                                <label class="form-check-label">
+                                    <input id="InputDelimiterDeleteFlag0" class="form-check-input" asp-for="Input.DelimiterDeleteFlags[0]" />
+                                </label>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -142,22 +149,28 @@
             <div class="row">
                 <div class="col-4 d-flex align-items-center">インポート情報</div>
                 <div class="col-8">
-                    <button type="button" class="btn btn-success float-right mx-3">追加</button>
+                    <button id="ButtonAddImport" type="button" class="btn btn-success float-right mx-3">追加</button>
                 </div>
             </div>
             <table class="table table-sm table-hover" id="TableImport">
                 <!-- Namespace -->
                 <thead>
                     <tr>
-                        <th>Import</th>
+                        <th>Import文に追加する参照</th>
                         <th>削除</th>
                     </tr>
                 </thead>
                 <!-- TODO:jQuery関数化すること -->
-                <tbody>
+                <tbody id="TbodyImport0">
                     <tr>
-                        <td><input placeholder="System.Data" asp-for="Input.Imports[0]" class="form-control" /></td>
-                        <td><button type="button" class="btn btn-danger">×</button></td>
+                        <td><input id="InputImport0" placeholder="System.Data" asp-for="Input.Imports[0]" class="form-control" /></td>
+                        <td><button data-index="0" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
+                    </tr>
+                </tbody>
+                <tbody id="TbodyImport1">
+                    <tr>
+                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[1]" class="form-control" /></td>
+                        <td><button data-index="1" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -177,14 +190,77 @@
         function aaaaFunction() {
         };
 
-        // 何かクリック
-        $('img[name=aaaa]').on('click', function () {
-            
-            const tbodyTemplate = $('<tbody>')
-                .attr('name', 'tableTemplate'); 
+        // TODO:追加するならば、次の番号を得る必要があるが？どうする？→tbodyの数を数える
 
-            $('#TableTemplate') 
-                .append(tbodyTemplate); 
+        // 追加ボタン
+        $('#ButtonAddDeclaration').on('click', function () {
+            alert('ButtonAddDeclaration');
+            // $('#TableTemplate')のtbodyの数を数える
+
+            // 要素を追加
+//                <tbody id="TbodyDeclaration0">
+//                    <tr>
+//                        <td><input placeholder="type" class="form-control" type="text" id="Input_Declarations_0__Id" name="Input.Declarations[0].Id" value="" /></td>
+//                        <td><input placeholder="プロパティの型" class="form-control" type="text" id="Input_Declarations_0__ToolTip" name="Input.Declarations[0].ToolTip" value="" /></td>
+//                        <td><input placeholder="int" class="form-control" type="text" id="Input_Declarations_0__Default" name="Input.Declarations[0].Default" value="" /></td>
+//                        <td><select class="form-control" id="Input_Declarations_0__Function" name="Input.Declarations[0].Function"><option value="0">None</option>
+//<option value="1">GenerateSwitchCases</option>
+//<option value="2">ClassName</option>
+//<option value="3">SimpleTypeName</option>
+//</select></td>
+//                        <td><input placeholder="aaaa" class="form-control" type="text" id="Input_Declarations_0__FunctionValue" name="Input.Declarations[0].FunctionValue" value="" /></td>
+//                        <td>
+//                            <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
+//                            <!-- 削除フラグDelimiterDeleteFlags -->
+//                            <div class="form-group form-check">
+//                                <label class="form-check-label">
+//                                    <input id="InputDelimiterDeleteFlag0" class="form-check-input" type="checkbox" data-val="true" data-val-required="The Boolean field is required." name="Input.DelimiterDeleteFlags[0]" value="true" />
+//                                </label>
+//                            </div>
+//                        </td>
+//                    </tr>
+//                </tbody>
+            //$('#TableTemplate') 
+            //    .append(????); 
+        });
+
+        // 追加ボタン
+        $('#ButtonAddImport').on('click', function () {
+            alert('ButtonAddImport');
+            // $('#TableImport')のtbodyの数を数える
+
+            // 要素を追加
+                //<tbody id="TbodyImport0">
+                //    <tr>
+                //        <td><input id="InputImport0" placeholder="System.Data" class="form-control" type="text" name="Input.Imports[0]" value="" /></td>
+                //        <td><button data-index="0" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
+                //    </tr>
+                //</tbody>
+                //<tbody id="TbodyImport1">
+                //    <tr>
+                //        <td><input id="InputImport1" placeholder="System.Data" class="form-control" type="text" name="Input.Imports[1]" value="" /></td>
+                //        <td><button data-index="1" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
+                //    </tr>
+                //</tbody>
+
+            //$('#TableImport') 
+            //    .append(????); 
+        });
+
+        // 削除ボタン
+        // データが歯抜けになるとサーバに送った時そこで配列が切れてしまう
+        // 編集のことも考慮すると削除フラグ入れて非表示にするのが良い
+        $('button[name=ButtonDeleteDeclaration]').on('click', function () {
+            var index = $(this).data('index');
+            $('#TbodyDeclaration' + index).addClass('d-none');
+            $('#InputDelimiterDeleteFlag' + index).attr('checked', true);  // フラグで削除したことにする
+        });
+
+        // 削除ボタン
+        $('button[name=ButtonDeleteImport]').on('click', function () {
+            var index = $(this).data('index');
+            $('#TbodyImport' + index).addClass('d-none');
+            $('#InputImport' + index).val('');  // 空文字列で削除したことにする
         });
 
         // テーブルの内容を削除する 

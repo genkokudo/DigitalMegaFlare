@@ -21,7 +21,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
 
         public IList<TestData> TestData { get;set; }
 
-        public async Task OnGetAsync()
+        public void OnGet()
         {
             //TestData = await _context.TestDatas.ToListAsync();
         }

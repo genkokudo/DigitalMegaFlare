@@ -9,6 +9,12 @@ namespace DigitalMegaFlare.Models
     {
         [Key]
         public long Id { get; set; }
+
+        /// <summary>
+        /// デミリタ配列が画面で削除されたかのフラグ
+        /// </summary>
+        public bool[] DelimiterDeleteFlags { get; set; }
+
         public Snippet()
         {
         }
