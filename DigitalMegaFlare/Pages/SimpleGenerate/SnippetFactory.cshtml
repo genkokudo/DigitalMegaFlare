@@ -112,7 +112,7 @@
                     </ol>
                 </div>
             </div>
-            <table class="table table-sm table-hover" id="TableTemplate">
+            <table class="table table-sm table-hover" id="TableDeclaration">
                 <thead>
                     <tr>
                         <th>変数名</th>
@@ -123,8 +123,7 @@
                         <th>削除</th>
                     </tr>
                 </thead>
-                <!-- TODO:jQuery関数化すること -->
-                <tbody id="TbodyDeclaration0">
+                @*<tbody id="TbodyDeclaration0">
                     <tr>
                         <td><input id="InputDeclarationId0" placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
                         <td><input placeholder="プロパティの型" asp-for="Input.Declarations[0].ToolTip" class="form-control" /></td>
@@ -135,7 +134,7 @@
                             <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
                         </td>
                     </tr>
-                </tbody>
+                </tbody>*@
             </table>
         </div>
         <hr />
@@ -154,37 +153,12 @@
                         <th>削除</th>
                     </tr>
                 </thead>
-                <!-- TODO:jQuery関数化すること -->
-                <tbody id="TbodyImport0">
+                @*<tbody id="TbodyImport0">
                     <tr>
                         <td><input id="InputImport0" placeholder="System.Data" asp-for="Input.Imports[0]" class="form-control" /></td>
                         <td><button data-index="0" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
                     </tr>
-                </tbody>
-                <tbody id="TbodyImport1">
-                    <tr>
-                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[1]" class="form-control" /></td>
-                        <td><button data-index="1" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                    </tr>
-                </tbody>
-                <tbody id="TbodyImport2">
-                    <tr>
-                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[2]" class="form-control" /></td>
-                        <td><button data-index="2" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                    </tr>
-                </tbody>
-                <tbody id="TbodyImport3">
-                    <tr>
-                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[3]" class="form-control" /></td>
-                        <td><button data-index="3" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                    </tr>
-                </tbody>
-                <tbody id="TbodyImport4">
-                    <tr>
-                        <td><input id="InputImport1" placeholder="System.Data" asp-for="Input.Imports[4]" class="form-control" /></td>
-                        <td><button data-index="4" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                    </tr>
-                </tbody>
+                </tbody>*@
             </table>
         </div>
 
@@ -204,47 +178,133 @@
 
         // 追加ボタン
         $('#ButtonAddDeclaration').on('click', function () {
-            // TODO:$('#TableTemplate')のtbodyの数を数える、非表示含む
-            var count = $('#TableTemplate').children('tbody').length;
+            // $('#TableDeclaration')のtbodyの数を数える、非表示含む
+            var count = $('#TableDeclaration').children('tbody').length;
             alert('ButtonAddDeclaration' + count);
             // 要素を追加
-//                <tbody id="TbodyDeclaration0">
-//                    <tr>
-//                        <td><input id="InputDeclarationId0" placeholder="type" class="form-control" type="text" name="Input.Declarations[0].Id" value="" /></td>
-//                        <td><input placeholder="プロパティの型" class="form-control" type="text" id="Input_Declarations_0__ToolTip" name="Input.Declarations[0].ToolTip" value="" /></td>
-//                        <td><input placeholder="int" class="form-control" type="text" id="Input_Declarations_0__Default" name="Input.Declarations[0].Default" value="" /></td>
-//                        <td><select class="form-control" id="Input_Declarations_0__Function" name="Input.Declarations[0].Function"><option value="0">None</option>
-//<option value="1">GenerateSwitchCases</option>
-//<option value="2">ClassName</option>
-//<option value="3">SimpleTypeName</option>
-//</select></td>
-//                        <td><input placeholder="aaaa" class="form-control" type="text" id="Input_Declarations_0__FunctionValue" name="Input.Declarations[0].FunctionValue" value="" /></td>
-//                        <td>
-//                            <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
-//                        </td>
-//                    </tr>
-//                </tbody>
+            const inputDeclarationId = $('<input>')
+                .attr('id', 'InputDeclarationId' + count)
+                .attr('placeholder', 'type')
+                .addClass('form-control')
+                .attr('type', 'text');
 
-            //$('#TableTemplate') 
-            //    .append(????); 
+            const tdDeclarationId = $('<td>');
+
+            const input6 = $('<input>')
+                .addClass('form-control')
+                .attr('type', 'text');
+
+            const tdDeclarationTooltip = $('<td>');
+
+            const inputDeclarationDefault = $('<input>')
+                .attr('placeholder', 'int')
+                .addClass('form-control')
+                .attr('type', 'text');
+
+            const tdDeclarationDefault = $('<td>');
+
+            const optionDeclarationNone = $('<option>')
+                .attr('value', '0')
+                .text('None');
+
+            const optionDeclarationGenerateSwitchCases = $('<option>')
+                .attr('value', '1')
+                .text('GenerateSwitchCases');
+
+            const optionDeclarationClassName = $('<option>')
+                .attr('value', '2')
+                .text('ClassName');
+
+            const optionDeclarationSimpleTypeName = $('<option>')
+                .attr('value', '3')
+                .text('SimpleTypeName');
+
+            const selectDeclarationFunction = $('<select>')
+                .addClass('form-control');
+
+            const tdDeclarationFunction = $('<td>');
+
+            const inputDeclarationFunctionValue = $('<input>')
+                .attr('placeholder', 'aaaa')
+                .addClass('form-control')
+                .attr('type', 'text');
+
+            const tdDeclarationFunctionValue = $('<td>');
+
+            const buttonDeleteDeclaration = $('<button>')
+                .data('index', count)
+                .attr('name', 'ButtonDeleteDeclaration')
+                .attr('type', 'button')
+                .addClass('btn')
+                .addClass('btn-danger')
+                .text('×');
+
+            const tdDeleteDeclaration = $('<td>');
+
+            const trDeclaration = $('<tr>');
+
+            const tbodyDeclaration = $('<tbody>')
+                .attr('id', 'TbodyDeclaration' + count);
+
+            tdDeclarationId.append(inputDeclarationId);
+            trDeclaration.append(tdDeclarationId);
+            tdDeclarationTooltip.append(input6);
+            trDeclaration.append(tdDeclarationTooltip);
+            tdDeclarationDefault.append(inputDeclarationDefault);
+            trDeclaration.append(tdDeclarationDefault);
+            selectDeclarationFunction.append(optionDeclarationNone);
+            selectDeclarationFunction.append(optionDeclarationGenerateSwitchCases);
+            selectDeclarationFunction.append(optionDeclarationClassName);
+            selectDeclarationFunction.append(optionDeclarationSimpleTypeName);
+            tdDeclarationFunction.append(selectDeclarationFunction);
+            trDeclaration.append(tdDeclarationFunction);
+            tdDeclarationFunctionValue.append(inputDeclarationFunctionValue);
+            trDeclaration.append(tdDeclarationFunctionValue);
+            tdDeleteDeclaration.append(buttonDeleteDeclaration);
+            trDeclaration.append(tdDeleteDeclaration);
+            tbodyDeclaration.append(trDeclaration);
+
+            $('#TableDeclaration') 
+                .append(tbodyDeclaration); 
         });
 
         // 追加ボタン
         $('#ButtonAddImport').on('click', function () {
-            // TODO:$('#TableImport')のtbodyの数を数える、非表示含む
+            // $('#TableImport')のtbodyの数を数える、非表示含む
             var count = $('#TableImport').children('tbody').length;
             alert('ButtonAddImport' + count);
 
             // 要素を追加
-                //<tbody id="TbodyImport0">
-                //    <tr>
-                //        <td><input id="InputImport0" placeholder="System.Data" class="form-control" type="text" name="Input.Imports[0]" value="" /></td>
-                //        <td><button data-index="0" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                //    </tr>
-                //</tbody>
+            const inputImport = $('<input>')
+                .attr('id', 'InputImport' + count)
+                .addClass('form-control')
+                .attr('type', 'text');
 
-            //$('#TableImport') 
-            //    .append(????); 
+            const tdImport = $('<td>');
+
+            const buttonDeleteImport = $('<button>')
+                .data('index', count)
+                .attr('name', 'ButtonDeleteImport')
+                .attr('type', 'button')
+                .addClass('btn')
+                .addClass('btn-danger')
+                .text('×');
+
+            const tdDeleteImport = $('<td>');
+
+            const trImport = $('<tr>');
+
+            const tbodyImport = $('<tbody>')
+                .attr('id', 'TbodyImport' + count);
+
+            tdImport.append(inputImport);
+            trImport.append(tdImport);
+            tdDeleteImport.append(buttonDeleteImport);
+            trImport.append(tdDeleteImport);
+            tbodyImport.append(trImport);
+
+            $('#TableImport') 
+                .append(tbodyImport); 
         });
 
         // 削除ボタン
