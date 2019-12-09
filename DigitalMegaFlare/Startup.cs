@@ -90,6 +90,9 @@ namespace DigitalMegaFlare
 
             //構成情報から、DefaultParametersクラスへバインド
             services.Configure<DefaultParameters>(this.Configuration.GetSection(SystemConstants.DefaultParameters));
+
+            // cshtml修正後、リロードですぐブラウザに反映する
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
         }
 
         // ランタイムから呼ばれるメソッド 

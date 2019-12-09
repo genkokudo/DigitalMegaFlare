@@ -3,7 +3,18 @@
 @{
     ViewData["Title"] = "jQuery作成サービス";
 }
-
+<p>
+    <strong>没である理由</strong><br />
+    jQueryは1行ずつ分解して頑張らなくても以下のようにして要素の追加ができるため。
+</p>
+<code>
+    var html = '&lt;tr&gt;&lt;td&gt;&lt;input type="text" name="name"&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="remove"&gt;-&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;';<br />
+    $('#TbodySample').append(html);
+</code>
+<p>
+    素のJavaScriptのappendChildを覚えながら、jQueryで同様のことができると聞いたため作ってしまったが無駄だった。<br />
+    Reactなどでもjsxなどを利用すれば同様のことができるため不要。
+</p>
 <h1>jQuery作成サービス</h1>
 <label style="color: red;">@ViewData["ErrorMessage"]</label>
 <hr />
