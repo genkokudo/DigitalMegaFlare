@@ -124,18 +124,6 @@
                         <th>削除</th>
                     </tr>
                 </thead>
-                @*<tbody id="TbodyDeclaration0">
-            <tr>
-                <td><input id="InputDeclarationId0" placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
-                <td><input placeholder="プロパティの型" asp-for="Input.Declarations[0].ToolTip" class="form-control" /></td>
-                <td><input placeholder="int" asp-for="Input.Declarations[0].Default" class="form-control" /></td>
-                <td><select id="InputDeclarationFunction0" asp-for="Input.Declarations[0].Function" asp-items="Html.GetEnumSelectList(typeof (Function))" class="form-control"></select></td>
-                <td><input id="InputDeclarationFunctionValue0" placeholder="関数による" asp-for="Input.Declarations[0].FunctionValue" class="form-control" /></td>
-                <td>
-                    <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
-                </td>
-            </tr>
-        </tbody>*@
             </table>
         </div>
         <hr />
@@ -154,12 +142,6 @@
                         <th>削除</th>
                     </tr>
                 </thead>
-                @*<tbody id="TbodyImport0">
-                    <tr>
-                        <td><input id="InputImport0" placeholder="System.Data" asp-for="Input.Imports[0]" class="form-control" /></td>
-                        <td><button data-index="0" name="ButtonDeleteImport" type="button" class="btn btn-danger">×</button></td>
-                    </tr>
-                </tbody>*@
             </table>
         </div>
 
@@ -209,90 +191,6 @@
             $('#TableDeclaration')
                 .append(tbodyDeclaration);
 
-            //const inputDeclarationId = $('<input>')
-            //    .attr('id', 'InputDeclarationId' + count)
-            //    .attr('placeholder', 'type')
-            //    .addClass('form-control')
-            //    .attr('type', 'text');
-
-            //const tdDeclarationId = $('<td>');
-
-            //const input6 = $('<input>')
-            //    .addClass('form-control')
-            //    .attr('type', 'text');
-
-            //const tdDeclarationTooltip = $('<td>');
-
-            //const inputDeclarationDefault = $('<input>')
-            //    .attr('placeholder', 'int')
-            //    .addClass('form-control')
-            //    .attr('type', 'text');
-
-            //const tdDeclarationDefault = $('<td>');
-
-            //const optionDeclarationNone = $('<option>')
-            //    .attr('value', '0')
-            //    .text('None');
-
-            //const optionDeclarationGenerateSwitchCases = $('<option>')
-            //    .attr('value', '1')
-            //    .text('GenerateSwitchCases');
-
-            //const optionDeclarationClassName = $('<option>')
-            //    .attr('value', '2')
-            //    .text('ClassName');
-
-            //const optionDeclarationSimpleTypeName = $('<option>')
-            //    .attr('value', '3')
-            //    .text('SimpleTypeName');
-
-            //const selectDeclarationFunction = $('<select>')
-            //    .addClass('form-control');
-
-            //const tdDeclarationFunction = $('<td>');
-
-            //const inputDeclarationFunctionValue = $('<input>')
-            //    .attr('placeholder', 'aaaa')
-            //    .addClass('form-control')
-            //    .attr('type', 'text');
-
-            //const tdDeclarationFunctionValue = $('<td>');
-
-            //const buttonDeleteDeclaration = $('<button>')
-            //    .data('index', count)
-            //    .attr('name', 'ButtonDeleteDeclaration')
-            //    .attr('type', 'button')
-            //    .addClass('btn')
-            //    .addClass('btn-danger')
-            //    .text('×');
-
-            //const tdDeleteDeclaration = $('<td>');
-
-            //const trDeclaration = $('<tr>');
-
-            //const tbodyDeclaration = $('<tbody>')
-            //    .attr('id', 'TbodyDeclaration' + count);
-
-            //tdDeclarationId.append(inputDeclarationId);
-            //trDeclaration.append(tdDeclarationId);
-            //tdDeclarationTooltip.append(input6);
-            //trDeclaration.append(tdDeclarationTooltip);
-            //tdDeclarationDefault.append(inputDeclarationDefault);
-            //trDeclaration.append(tdDeclarationDefault);
-            //selectDeclarationFunction.append(optionDeclarationNone);
-            //selectDeclarationFunction.append(optionDeclarationGenerateSwitchCases);
-            //selectDeclarationFunction.append(optionDeclarationClassName);
-            //selectDeclarationFunction.append(optionDeclarationSimpleTypeName);
-            //tdDeclarationFunction.append(selectDeclarationFunction);
-            //trDeclaration.append(tdDeclarationFunction);
-            //tdDeclarationFunctionValue.append(inputDeclarationFunctionValue);
-            //trDeclaration.append(tdDeclarationFunctionValue);
-            //tdDeleteDeclaration.append(buttonDeleteDeclaration);
-            //trDeclaration.append(tdDeleteDeclaration);
-            //tbodyDeclaration.append(trDeclaration);
-
-            //$('#TableDeclaration') 
-            //    .append(tbodyDeclaration); 
         });
 
         // 追加ボタン
@@ -310,52 +208,8 @@
 
             $('#TableImport') 
                 .append(tbodyImport); 
-
-
-            //const inputImport = $('<input>')
-            //    .attr('id', 'InputImport' + count)
-            //    .addClass('form-control')
-            //    .attr('type', 'text');
-
-            //const tdImport = $('<td>');
-
-            //const buttonDeleteImport = $('<button>')
-            //    .data('index', count)
-            //    .attr('name', 'ButtonDeleteImport')
-            //    .attr('type', 'button')
-            //    .addClass('btn')
-            //    .addClass('btn-danger')
-            //    .text('×');
-
-            //const tdDeleteImport = $('<td>');
-
-            //const trImport = $('<tr>');
-
-            //const tbodyImport = $('<tbody>')
-            //    .attr('id', 'TbodyImport' + count);
-
-            //tdImport.append(inputImport);
-            //trImport.append(tdImport);
-            //tdDeleteImport.append(buttonDeleteImport);
-            //trImport.append(tdDeleteImport);
-            //tbodyImport.append(trImport);
-
-            //$('#TableImport') 
-            //    .append(tbodyImport); 
         });
         
-        //$('button[name=ButtonDeleteDeclaration]').on('click', function () {
-        //    var index = $(this).data('index');
-        //    $('#TbodyDeclaration' + index).addClass('d-none');
-        //    $('#InputDeclarationId' + index).val('');
-        //});
-
-        //$('button[name=ButtonDeleteImport]').on('click', function () {
-        //    var index = $(this).data('index');
-        //    $('#TbodyImport' + index).addClass('d-none');
-        //    $('#InputImport' + index).val('');  // 空文字列で削除したことにする
-        //});
-
         // 削除ボタン
         // データが歯抜けになるとサーバに送った時そこで配列が切れてしまう
         // 編集のことも考慮すると削除フラグ入れて非表示にするのが良い
@@ -397,7 +251,5 @@
             }
         }); 
         
-        // TODO:コメント削除
-
     </script>
 }

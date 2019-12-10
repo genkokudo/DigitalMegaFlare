@@ -53,10 +53,10 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         private string SetOutput()
         {
             // Input.Declaration.Idが""だったらスルー
-            Input.Declarations.RemoveAll(x => string.IsNullOrWhiteSpace(x.Id));
+            Input.Declarations?.RemoveAll(x => string.IsNullOrWhiteSpace(x.Id));
 
             // Input.Importsが""だったらスルー
-            Input.Imports.RemoveAll(x => string.IsNullOrWhiteSpace(x));
+            Input.Imports?.RemoveAll(x => string.IsNullOrWhiteSpace(x));
 
             var generator = new SnippetGenerator();
             var xml = generator.MakeSnippetXml(Input);
