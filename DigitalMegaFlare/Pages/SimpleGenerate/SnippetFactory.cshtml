@@ -125,17 +125,17 @@
                     </tr>
                 </thead>
                 @*<tbody id="TbodyDeclaration0">
-                    <tr>
-                        <td><input id="InputDeclarationId0" placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
-                        <td><input placeholder="プロパティの型" asp-for="Input.Declarations[0].ToolTip" class="form-control" /></td>
-                        <td><input placeholder="int" asp-for="Input.Declarations[0].Default" class="form-control" /></td>
-                        <td><select asp-for="Input.Declarations[0].Function" asp-items="Html.GetEnumSelectList(typeof (Function))" class="form-control"></select></td>
-                        <td><input placeholder="aaaa" asp-for="Input.Declarations[0].FunctionValue" class="form-control" /></td>
-                        <td>
-                            <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
-                        </td>
-                    </tr>
-                </tbody>*@
+            <tr>
+                <td><input id="InputDeclarationId0" placeholder="type" asp-for="Input.Declarations[0].Id" class="form-control" /></td>
+                <td><input placeholder="プロパティの型" asp-for="Input.Declarations[0].ToolTip" class="form-control" /></td>
+                <td><input placeholder="int" asp-for="Input.Declarations[0].Default" class="form-control" /></td>
+                <td><select id="InputDeclarationFunction0" asp-for="Input.Declarations[0].Function" asp-items="Html.GetEnumSelectList(typeof (Function))" class="form-control"></select></td>
+                <td><input id="InputDeclarationFunctionValue0" placeholder="関数による" asp-for="Input.Declarations[0].FunctionValue" class="form-control" /></td>
+                <td>
+                    <button data-index="0" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>
+                </td>
+            </tr>
+        </tbody>*@
             </table>
         </div>
         <hr />
@@ -181,24 +181,25 @@
         $('#ButtonAddDeclaration').on('click', function () {
             // $('#TableDeclaration')のtbodyの数を数える、非表示含む
             var count = $('#TableDeclaration').children('tbody').length;
-            alert('ButtonAddDeclaration' + count);
 
             // 要素を追加
-            // 削除のためにIDを付与
+            // 削除のためにidを付与
+            // 削除していることを示すため空にする要素にidを付与
+            // イベント発火がある要素にkeyを付与、値操作がある要素にid付与
+            // nameは決まったものしか付与してはならない。それ以外の要素は自由（"key"とか"data-***"とか）
             var tbodyDeclaration = '<tbody id="TbodyDeclaration' + count + '">';
             tbodyDeclaration += '    <tr>';
-            //// 削除していることを示すため空にする要素なのでIDを付与
             tbodyDeclaration += '        <td><input id="InputDeclarationId' + count + '" placeholder="type" class="form-control" type="text" name="Input.Declarations[' + count + '].Id" value="" /></td>';
             tbodyDeclaration += '        <td><input placeholder="プロパティの型" class="form-control" type="text" id="Input_Declarations_' + count + '__ToolTip" name="Input.Declarations[' + count + '].ToolTip" value="" /></td>';
             tbodyDeclaration += '        <td><input placeholder="int" class="form-control" type="text" id="Input_Declarations_' + count + '__Default" name="Input.Declarations[' + count + '].Default" value="" /></td>';
-            tbodyDeclaration += '        <td><select class="form-control" id="Input_Declarations_' + count + '__Function" name="Input.Declarations[' + count + '].Function">';
+            tbodyDeclaration += '        <td><select key="InputDeclarationFunction" data-index="' + count + '" id="InputDeclarationFunction' + count + '" class="form-control" name="Input.Declarations[' + count + '].Function">';
             tbodyDeclaration += '                <option value="0">None</option>';
             tbodyDeclaration += '                <option value="1">GenerateSwitchCases</option>';
             tbodyDeclaration += '                <option value="2">ClassName</option>';
             tbodyDeclaration += '                <option value="3">SimpleTypeName</option>';
             tbodyDeclaration += '            </select>';
             tbodyDeclaration += '        </td>';
-            tbodyDeclaration += '        <td><input placeholder="aaaa" class="form-control" type="text" id="Input_Declarations_' + count + '__FunctionValue" name="Input.Declarations[' + count + '].FunctionValue" value="" /></td>';
+            tbodyDeclaration += '        <td><input id="InputDeclarationFunctionValue' + count + '" placeholder="" class="form-control" type="text" name="Input.Declarations[' + count + '].FunctionValue" value="" /></td>';
             tbodyDeclaration += '        <td>';
             tbodyDeclaration += '            <button data-index="' + count + '" name="ButtonDeleteDeclaration" type="button" class="btn btn-danger">×</button>';
             tbodyDeclaration += '        </td>';
@@ -298,7 +299,6 @@
         $('#ButtonAddImport').on('click', function () {
             // $('#TableImport')のtbodyの数を数える、非表示含む
             var count = $('#TableImport').children('tbody').length;
-            alert('ButtonAddImport' + count);
 
             // 要素を追加
             var tbodyImport = '<tbody id="TbodyImport' + count + '">';
@@ -377,9 +377,27 @@
             $('#table' + questionid).remove();
         }
 
+        // 選択した関数によって引数欄を無効化
+        $(document).on('change', 'select[key=InputDeclarationFunction]', function () { 
+            var index = $(this).data('index');
+            var val = $(this).val();
+            $('#InputDeclarationFunctionValue' + index).val("aaaa" + val);
+            if (val === '0') {
+                $('#InputDeclarationFunctionValue' + index).val('');
+                $('#InputDeclarationFunctionValue' + index).attr('disabled', true);
+            } else if(val === '1') {
+                $('#InputDeclarationFunctionValue' + index).val('$enumId$');
+                $('#InputDeclarationFunctionValue' + index).attr('disabled', false);
+            } else if(val === '2') {
+                $('#InputDeclarationFunctionValue' + index).val('');
+                $('#InputDeclarationFunctionValue' + index).attr('disabled', true);
+            } else if(val === '3') {
+                $('#InputDeclarationFunctionValue' + index).val('global::System.Console');
+                $('#InputDeclarationFunctionValue' + index).attr('disabled', false);
+            }
+        }); 
+        
         // TODO:コメント削除
-        // TODO:選択した関数によって引数欄を無効化
-
 
     </script>
 }
