@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using DigitalMegaFlare.Settings;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
 
 namespace DigitalMegaFlare
 {
@@ -93,6 +94,9 @@ namespace DigitalMegaFlare
 
             // cshtml修正後、リロードですぐブラウザに反映する
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
+
+            //MediatRを使用する
+            services.AddMediatR(typeof(Startup));
         }
 
         // ランタイムから呼ばれるメソッド 
