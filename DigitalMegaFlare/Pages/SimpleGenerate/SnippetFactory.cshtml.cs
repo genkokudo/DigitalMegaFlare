@@ -18,15 +18,19 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         public string Output { get; set; }
 
         // TODO:クッキー
-        private const string cKey = "TestKey";
-        private string cValue = "TestValue";
+        private const string CAuthor = "Author";
         public IActionResult OnGetAsync()
         {
-            // TODO:クッキーから読めないかなあー
-            HttpContext.Response.Cookies.Append(cKey, cValue);
-
             // 画面項目を設定
             Input = new Snippet();
+
+            // クッキーから読む
+            var author = HttpContext.Request.Cookies.FirstOrDefault(x => x.Key == CAuthor);
+            if (author.Key != null)
+            {
+                Input.Author = author.Value;
+            }
+
             return Page();
         }
 
@@ -36,6 +40,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         /// <returns></returns>
         public IActionResult OnPostGenerateXmlAsync()
         {
+            // クッキーに書く
+            HttpContext.Response.Cookies.Append(CAuthor, Input.Author);
             SetOutput();
             return Page();
         }
@@ -46,6 +52,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate
         /// <returns></returns>
         public IActionResult OnPostDownloadAsync()
         {
+            // クッキーに書く
+            HttpContext.Request.Cookies.Append(new KeyValuePair<string, string>(CAuthor, Input.Author));
             string output = SetOutput();
             return File(System.Text.Encoding.UTF8.GetBytes(output), "application/xml", Input.Title + ".snippet");
         }

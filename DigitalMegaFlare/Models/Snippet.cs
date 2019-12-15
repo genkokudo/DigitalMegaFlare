@@ -14,6 +14,7 @@ namespace DigitalMegaFlare.Models
         {
         }
 
+
         /// <summary>
         /// 可変長要素以外で必須のものを設定する
         /// </summary>
