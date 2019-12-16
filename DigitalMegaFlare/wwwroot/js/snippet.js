@@ -175,3 +175,34 @@ $.ajax({
 //});
 
 
+// -----------------------------------------------------
+//・js_modal
+// show.bs.modal	開くshowメソッドを呼び出した時のイベント
+// shown.bs.modal	完全に表示された時のイベント
+// hide.bs.modal	閉じるhideメソッドを呼び出した時のイベント
+// hidden.bs.modal	完全に非表示になった時のイベント// モーダル初期処理
+$('#editModal').on('show.bs.modal', function (event) {
+    // $(document).on('show.bs.modal', '.modal', function (event) {
+    var id = $(this).data('id');
+});
+
+<div class="modal fade" id="editModal" data-id="@(Model.Discussion.Presenters[i].Id)" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["編集"]</h5>
+                <button type="button" data-toggle="modal" data-target="#editModal" class="btn btn-primary">@Localizer["閉じる"]</button>
+            </div>
+            <!-- 項目1 -->
+            <div class="modal-body">
+            </div>
+            <!-- 項目2 -->
+            <div class="modal-body border">
+            </div>
+            <div class="modal-footer">
+                <input asp-page-handler="UpdatePresenter" asp-route-uri="@Model.Discussion.Presenters[i].Uri" type="submit" value="OK" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</div>
+
