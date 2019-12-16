@@ -3,13 +3,54 @@
 
 
 // -----------------------------------------------------
+//			// 各マスタの選択項目
+//			public Dictionary<string, SelectListItem[]> Lists { get; set; }
+
+//				// 各マスタを選択項目にする
+//				var status = _db.Statuses.OrderBy(x => x.StatusId).AsNoTracking().ToArray();
+//				var statusSelectList = new List<SelectListItem> { new SelectListItem("--- 未選択 ---", "-1") };
+//				foreach (var item in status)
+//				{
+//					statusSelectList.Add(new SelectListItem(item.Name, item.StatusId.ToString()));
+//				}
+
+//				var lists = new Dictionary<string, SelectListItem[]>();
+//				lists.Add("Status", statusSelectList.ToArray());
 
 
+//		// 選択肢作成
+//        var _lists = @Html.Raw(JsonConvert.SerializeObject(Model.Data.Lists));
+
+//            var select = _lists[parameterName];
+//			select.forEach(function (value) {
+//                tbody += '                <option value="' + value.Value + '">' + value.Text + '</option>';
+//			});
 // -----------------------------------------------------
 
 //// TODO:サーバ側
-//// Enumを選択肢として扱う方法を書く
+//// 値読み込み時にEnumを選択肢として扱う方法を書く
 //// 例になるViewModelを書く
+
+
+//			/// <summary>
+//			/// クライアント側で文字列を使用するため
+//			/// Enumを辞書にする
+//			/// </summary>
+//			/// <typeparam name="T">Enum名</typeparam>
+//			/// <returns>Enum辞書</returns>
+//			private static Dictionary <int, string> EnumToDictionary<T>()
+//            {
+//                var values = Enum.GetValues(typeof (T)).Cast<T>();
+//                var dict = values.ToDictionary(e => Convert.ToInt32(e), e => e.ToString());
+//                return dict;
+//            }
+
+//// Enum
+//var _filterModes = @Html.Raw(JsonConvert.SerializeObject(Model.Data.FilterModes));
+
+//filter.FilterColors.forEach(function (value) {
+//    AddColor(value.FilterColorId, value.Color, value.Value, value.IsActive, _filterModes[value.FilterMode]);
+//});
 
 // html_table //
 
@@ -62,7 +103,6 @@
 
 //        $('#TableData')
 //            .append(tbodyData);
-
 //    });
 
 //// 削除ボタン
@@ -81,16 +121,26 @@
 // -----------------------------------------------------
 
 // js_ajax //
-// TODO:formDataについて書かないと分からん、以下の2つを作ること
+// TODO:以下の2つを作ること
 // データ送信版：jQueryのやり方 js_ajax_data
 // ファイルアップロード版：ソース js_ajax_upload
+
+var formData = new FormData();
+// 全てのアップロードファイルを取得
+$("input[name=file]").each(function (index, element) {
+    var file = element.files[0];
+    if (file != undefined) {
+        formData.append("uploadFiles", file, file.name);
+        formData.append("Ids", element.getAttribute("id"));
+    }
+});
 $.ajax({
     type: 'POST',
     contentType: "application/json",  
     url: '/Pdf/Upload', // TODO:コントローラ名とハンドラ名を設定
     contentType: false,
     processData: false,
-    data: formData // TODO:？？
+    data: formData
 }).then(
     function (data) {
         alert("更新が完了しました");
@@ -99,6 +149,10 @@ $.ajax({
         alert("更新に失敗しました");
     }
 ); 
+
+//        public async Task<IActionResult> UploadAsync(List<IFormFile> uploadFiles, List<long> Ids)
+//        {
+//        }
 
 //// ※<input" type="file"/>を書かないとアップロードはできない。
 //// でも、ファイル選択のボタンデザインを変えたい場合↓
