@@ -1,0 +1,58 @@
+@{
+	// ナビゲーションメニューなので、マスタメンテ用とは限らない
+	// よって、以下のリストを作成すること
+	// NavKindList(Key	Parent	Value	Part)(キー	親モデル	値	部品)
+	// NavList(Key	Parent	Name	Value	Part)(キー	親モデル	名前	値	部品)
+	var Index = int.Parse(Model.General.Index); 
+	var Mod = Model.RootList[Index];
+}
+import * as React from 'react';
+import { Collapse, Container, Navbar, NavbarToggler, NavItem, NavLink, DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown } from 'reactstrap';
+import { Link } from 'react-router-dom';
+import '../NavMenu.css';
+
+// @(Mod.Comment)
+const @(Mod.Pascal)Nav = () => {
+    // ハンバーガーメニューのトグル
+    const [isOpen, setIsOpen] = React.useState(false);
+    // 描画処理
+    return (
+        <Navbar className="navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" light>
+            <Container fluid={true}>
+                {/* 小さい画面の時ハンバーガーメニュー表示 */}
+                <NavbarToggler onClick={() => { setIsOpen(!isOpen); }} className="mr-2" />
+                <Collapse className="d-sm-inline-flex" isOpen={isOpen} navbar>
+                    <ul className="navbar-nav flex-grow">
+                        @foreach(var navKind in Mod.NavKindList){
+                        @:<@(navKind.Part)>
+                        if(navKind.Part == "UncontrolledDropdown"){
+                            @:<DropdownToggle tag="a" className="nav-link text-dark" caret>@(navKind.Value)</DropdownToggle>
+                            @:<DropdownMenu>
+                            foreach(var nav in navKind.NavList){
+                                if(nav.Part == "DropdownItem"){
+                                // TODO:今日の改修を行い、indexとAppを修正後、Appと揃えること
+                                @:<DropdownItem tag={Link} to="/react/@(Mod.Hyphen)/@(nav.Hyphen)">@(nav.Value)</DropdownItem>
+                                }
+                            }
+                            @:</DropdownMenu>
+                        }else if(navKind.Part == "NavItem"){
+                            foreach(var nav in navKind.NavList){
+                                if(nav.Part == "NavLink"){
+                            // TODO:今日の改修を行い、indexとAppを修正後、Appと揃えること
+                            @:<NavLink tag={Link} className="text-dark" to="/react/@(Mod.Hyphen)/@(nav.Hyphen)">@(nav.Value)</NavLink>
+                                }
+                            }
+                        }
+                        @:</@(navKind.Part)>
+                        }
+                        <NavItem>
+                            <NavLink href="/" className="text-primary">戻る</NavLink>
+                        </NavItem>
+                    </ul>
+                </Collapse>
+            </Container>
+        </Navbar>
+    );
+};
+
+export default @(Mod.Pascal)Nav;
