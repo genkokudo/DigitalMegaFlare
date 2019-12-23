@@ -178,83 +178,97 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public async Task<IActionResult> OnPostGenerateAsync(long id)
         {
-            // エンジンを生成
-            var engine = new RazorLightEngineBuilder()
+            try
+            {
+                // エンジンを生成
+                var engine = new RazorLightEngineBuilder()
                           .UseEmbeddedResourcesProject(typeof(Program))
                           .UseMemoryCachingProvider()
                           .DisableEncoding()
                           .Build();
 
-            // 対象のExcelを読み込む
-            var data = _db.ExcelFiles.First(x => x.Id == id);
+                // 対象のExcelを読み込む
+                var data = _db.ExcelFiles.First(x => x.Id == id);
 
-            Dictionary<string, List<List<string>>> excel = null;
-            using (var stream = new MemoryStream(data.Xlsx))
-            {
-                excel = RazorHelper.ReadExcel(stream, true);
-            }
+                Dictionary<string, List<List<string>>> excel = null;
+                using (var stream = new MemoryStream(data.Xlsx))
+                {
+                    excel = RazorHelper.ReadExcel(stream, true);
+                }
 
-            // 外部生成
-            var outInput = await GenerateOut(excel, engine);
+                // 外部生成
+                var outInput = await GenerateOut(excel, engine);
 
-            // Modelの作成
-            dynamic model;
-            try
-            {
+                // Modelの作成
+                dynamic model;
                 model = RazorHelper.CreateModel(excel, outInput);
+
+                // 一時出力先を作成
+                string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
+                RazorHelper.DeleteDirectory(outPath, true); // linuxだとパーミッションが消えてダウンロードできなくなるので最初のフォルダは残す
+                RazorHelper.SafeCreateDirectory(outPath);
+                // 一時ファイル消す
+                RazorHelper.DeleteFiles(outPath);
+
+                // リストを読んでソース生成する
+                // ↓この"RootList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は"RootList"固定にする。
+                var outFileList = new List<string>();
+                var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
+
+                // 各ソース生成
+                List<dynamic> generatedSource = await GenerateSource(model, engine);
+
+                for (int i = 0; i < model.RootList.Count; i++)
+                {
+                    // ファイル名生成
+                    var resultFilename = await engine.CompileRenderStringAsync(
+                        $"{model.RootList[i].Name}Name",
+                        model.RootList[i].OutputFileName,
+                        new
+                        {
+                            model.RootList[i].Name,
+                            model.RootList[i].Camel,
+                            model.RootList[i].Pascal,
+                            model.RootList[i].Plural,
+                            model.RootList[i].Hyphen,
+                            model.RootList[i].Snake,
+                            model.RootList[i].CamelPlural,
+                            model.RootList[i].PascalPlural
+                        });
+
+                    // 生成したファイルを一時保存
+                    // VisualStudioが勘違いを起こすのでファイル末尾に"_"をつける
+                    var outFileName = $"{resultFilename}_";
+                    outFileList.Add(outFileName);
+
+                    // ディレクトリ分けしたZipを作成する
+                    RazorHelper.SafeCreateDirectory(Path.Combine(outPath, Path.GetDirectoryName(outFileName)));
+                    System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), generatedSource[i], Encoding.UTF8);
+                }
+
+                // 圧縮ファイルの準備
+                string dateFormat = "yyyyMMddHHmmss";
+                string outFilePath = Path.Combine(outPath, $"{DateTime.UtcNow.ToString(dateFormat)}.zip");
+                // 一時保存したファイルをZipにする
+                using (ZipArchive archive = ZipFile.Open(outFilePath, ZipArchiveMode.Create))
+                {
+                    foreach (var item in outFileList)
+                    {
+                        archive.CreateEntryFromFile(
+                            Path.Combine(outPath, $"{item}"),
+                            $"{item.TrimEnd('_')}", // ここでスラッシュを入れると、ディレクトリ分けしたZipが作成できる
+                            CompressionLevel.NoCompression
+                        );
+                    }
+                }
+
+                return File(new FileStream(outFilePath, FileMode.Open), "application/zip", $"{data.RawFileName}.zip");
             }
             catch (Exception e)
             {
                 ViewData["Error"] = e.Message;
                 return Page();
             }
-            // 一時出力先を作成
-            string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
-            RazorHelper.DeleteDirectory(outPath, true); // linuxだとパーミッションが消えてダウンロードできなくなるので最初のフォルダは残す
-            RazorHelper.SafeCreateDirectory(outPath);
-            // 一時ファイル消す
-            RazorHelper.DeleteFiles(outPath);
-
-            // リストを読んでソース生成する
-            // ↓この"RootList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は"RootList"固定にする。
-            var outFileList = new List<string>();
-            var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
-
-            // 各ソース生成
-            List<dynamic> generatedSource = await GenerateSource(model, engine);
-
-            for (int i = 0; i < model.RootList.Count; i++)
-            {
-                // ファイル名生成
-                var resultFilename = await engine.CompileRenderStringAsync($"{model.RootList[i].Name}Name", model.RootList[i].OutputFileName, new { model.RootList[i].Name });
-
-                // 生成したファイルを一時保存
-                // VisualStudioが勘違いを起こすのでファイル末尾に"_"をつける
-                var outFileName = $"{resultFilename}_";
-                outFileList.Add(outFileName);
-
-                // ディレクトリ分けしたZipを作成する
-                RazorHelper.SafeCreateDirectory(Path.Combine(outPath, Path.GetDirectoryName(outFileName)));
-                System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), generatedSource[i], Encoding.UTF8);
-            }
-
-            // 圧縮ファイルの準備
-            string dateFormat = "yyyyMMddHHmmss";
-            string outFilePath = Path.Combine(outPath, $"{DateTime.UtcNow.ToString(dateFormat)}.zip");
-            // 一時保存したファイルをZipにする
-            using (ZipArchive archive = ZipFile.Open(outFilePath, ZipArchiveMode.Create))
-            {
-                foreach (var item in outFileList)
-                {
-                    archive.CreateEntryFromFile(
-                        Path.Combine(outPath, $"{item}"),
-                        $"{item.TrimEnd('_')}", // ここでスラッシュを入れると、ディレクトリ分けしたZipが作成できる
-                        CompressionLevel.NoCompression
-                    );
-                }
-            }
-
-            return File(new FileStream(outFilePath, FileMode.Open), "application/zip", $"{data.RawFileName}.zip");
         }
 
         /// <summary>
