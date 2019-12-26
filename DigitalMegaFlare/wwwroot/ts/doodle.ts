@@ -1,3 +1,4 @@
-﻿function greeting() {
+﻿
+function greeting() {
     alert("hello work");
 }

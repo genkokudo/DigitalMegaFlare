@@ -1,4 +1,4 @@
 function greeting() {
     alert("hello work");
 }
-//# sourceMappingURL=test.js.map
+//# sourceMappingURL=doodle.js.map

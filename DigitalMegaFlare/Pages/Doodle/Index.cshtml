@@ -5,7 +5,7 @@
 }
 
 <h1>落書き帳</h1>
-<p>このサイトは、ASP.NET Core 3.0, CentOS8, MariaDB, Vue.js, 多少の好奇心 でできています。</p>
+<p>このサイトは、ASP.NET Core 3.0, CentOS8, MariaDB, React.js, 多少の好奇心 でできています。</p>
 
 <h3>考え事</h3>
 <p>これから何作ろうかな。。。</p>
@@ -17,9 +17,55 @@
     <button type="submit" class="btn btn-primary btn-sm">なにこれ</button>
 </form>
 
+<div id="doodle"></div>
+<div id="app01"></div>
+<div id="app02"></div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    @*<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>*@
+    <script src="~/ts/doodle.js" asp-append-version="true" type="text/babel">
+    </script>
+    <script type="text/babel">
+
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    text: 'Hello Work!'
+                }
+            }
+
+            render() {
+                return (
+                    <div>
+                        <p> {this.state.text} </p>
+                    </div>
+                )
+            }
+        }
+
+        ReactDOM.render(
+            <App />,
+            document.getElementById('doodle')
+        );
+
+        class HelloWork extends React.Component {
+            render() {
+                return <div>Hello Work {this.props.name}</div>;
+            }
+        }
+
+        const hwElement = <HelloWork name="01" />;
+        ReactDOM.render(hwElement,
+            document.getElementById('app01'));
+
+        const hwFactory = React.createFactory(HelloWork);
+        ReactDOM.render(hwFactory({ name: '02' }),
+            document.getElementById('app02'));
 
         // 何か関数
         function aaaaFunction() {
@@ -28,6 +74,7 @@
         // 何かクリック
         $('img[name=aaaa]').on('click', function () {
         });
+        alert("正常です");
 
     </script>
 }
