@@ -267,7 +267,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             catch (Exception e)
             {
                 ViewData["Error"] = e.Message;
-                return Page();
+                return await OnGetAsync();
             }
         }
 
