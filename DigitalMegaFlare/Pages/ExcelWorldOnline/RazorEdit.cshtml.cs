@@ -297,22 +297,24 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                     // subリスト追加
                     files.Add(root.Name, new List<SelectListItem>());
                 }
+                // 1個下
                 var subs = _db.RazorFiles.Where(x => x.Parent.Id == root.Id && x.Razor == null).ToList();
                 foreach (var sub in subs)
                 {
-                    if (!files.ContainsKey(sub.Name))
+                    var subName = $"{root.Name}#{sub.Name}";
+                    if (!files.ContainsKey(subName))
                     {
                         // subリストに追加
-                        files[root.Name].Add(new SelectListItem(sub.Name, sub.Name));
+                        files[root.Name].Add(new SelectListItem(sub.Name, subName));
 
                         // ファイルリスト追加
-                        files.Add(sub.Name, new List<SelectListItem>());
+                        files.Add(subName, new List<SelectListItem>());
                     }
                     var razors = _db.RazorFiles.Where(x => x.Parent.Id == sub.Id && x.Razor != null).ToList();
                     foreach (var razor in razors)
                     {
                         // ファイル追加
-                        files[sub.Name].Add(new SelectListItem(razor.Name, razor.Id.ToString()));
+                        files[subName].Add(new SelectListItem(razor.Name, razor.Id.ToString()));
                     }
                 }
             }
