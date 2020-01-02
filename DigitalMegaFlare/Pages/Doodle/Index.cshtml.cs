@@ -29,7 +29,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Data = await _mediator.Send(new Query { Id = 1 });
+            //Data = await _mediator.Send(new Query { Id = 1 });
             return Page();
         }
 

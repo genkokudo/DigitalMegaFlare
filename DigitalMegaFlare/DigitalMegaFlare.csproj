@@ -7,8 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="wwwroot\ts\doodle.ts" />
-    <Content Remove="wwwroot\ts\test.ts" />
+    <Content Remove="wwwroot\src\ts\doodle.tsx" />
+    <Content Remove="wwwroot\src\ts\file.ts" />
+    <Content Remove="wwwroot\src\ts\test.ts" />
   </ItemGroup>
 
 
@@ -54,12 +55,12 @@
 
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptTarget>ES2019</TypeScriptTarget>
+    <TypeScriptTarget>ES2015</TypeScriptTarget>
     <TypeScriptJSXEmit>React</TypeScriptJSXEmit>
     <TypeScriptModuleKind>ES6</TypeScriptModuleKind>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
-    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
     <TypeScriptOutFile />
     <TypeScriptOutDir />
     <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
