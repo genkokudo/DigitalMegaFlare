@@ -2,56 +2,33 @@
 //import * as React from "react";
 //import * as ReactDOM from "react-dom";
 
-class App extends React.Component {
-    constructor(props: string) {
-        super(props);
-        this.state = {
-            text: 'Hello Work!'
-        }
+class Hello extends React.Component<{
+    /**
+     * @default 'Hello Work!'
+     */
+    compiler?: string,
+    framework: string
+}> {
+    static defaultProps = {
+        compiler: 'Hello Work!'
     }
-
     render() {
+        const compiler = this.props.compiler!;
         return (
             <div>
-                <p>Hello Work!</p>
+                <div>{compiler}</div>
+                <div>{this.props.framework}</div>
             </div>
-        )
+        );
     }
 }
 
-// 何でエラーが出るのかわからない
-// TSでReact書くための基礎を調べること
-//<p>{this.state.text} </p>
-
-//ReactDOM.render(<App />, 'aaaa');
-ReactDOM.render(<App />, document.getElementById('doodle'));
-                    
-class HelloWork extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            text: 'Hello Work!'
-        }
-    }
-
-    render() {
-        //return <div>Hello Work {this.props.name} </div>;
-        return <div>Hello Work !! </div>;
-    }
-}
-
-// 動的に変数を入れることができないのは何で？
-//const hwElement = <HelloWork name="01"/>;
-//ReactDOM.render(hwElement, document.getElementById('app01'));
+const hwElement = <Hello framework="React" />;
+ReactDOM.render(hwElement, document.getElementById('app01'));
 
 // Factoryを作ってから描画する方法
-const hwFactory = React.createFactory(HelloWork);
-ReactDOM.render(hwFactory({ name: '02' }), document.getElementById('app02'));
-
-
-
-
-
+const hwFactory = React.createFactory(Hello);
+ReactDOM.render(hwFactory({ framework: 'ananan' }), document.getElementById('app02'));
 
 
 
