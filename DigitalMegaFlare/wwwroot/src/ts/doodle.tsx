@@ -43,9 +43,19 @@ class HelloWork extends React.Component {
 // 動的に変数を入れることができないのは何で？
 //const hwElement = <HelloWork name="01"/>;
 //ReactDOM.render(hwElement, document.getElementById('app01'));
-                    
+
+// Factoryを作ってから描画する方法
 const hwFactory = React.createFactory(HelloWork);
 ReactDOM.render(hwFactory({ name: '02' }), document.getElementById('app02'));
-                    
+
+
+
+
+
+
+
+
+
+
 // 動作確認
 alert("正常です");
