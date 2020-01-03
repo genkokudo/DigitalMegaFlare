@@ -1,4 +1,3 @@
-// 何で別でReactをCDNして、こっちをコメントアウトすればいいのかわからない。一切インポートできないってこと？
 //import * as React from "react";
 //import * as ReactDOM from "react-dom";
 var __extends = (this && this.__extends) || (function () {
@@ -14,21 +13,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-//class App extends React.Component {
-//    constructor(props: string) {
-//        super(props);
-//        this.state = {
-//            text: 'Hello Work!'
-//        }
-//    }
-//    render() {
-//        return (
-//            <div>
-//                <p>Hello Work!</p>
-//            </div>
-//        )
-//    }
-//}
+//import { echo } from "./file";
 var Hello = /** @class */ (function (_super) {
     __extends(Hello, _super);
     function Hello() {
@@ -50,6 +35,7 @@ ReactDOM.render(hwElement, document.getElementById('app01'));
 // Factoryを作ってから描画する方法
 var hwFactory = React.createFactory(Hello);
 ReactDOM.render(hwFactory({ framework: 'ananan' }), document.getElementById('app02'));
+//ReactDOM.render(hwFactory({ framework: echo('ananan') }), document.getElementById('app02'));
 // 動作確認
 alert("正常です");
 //# sourceMappingURL=doodle.js.map

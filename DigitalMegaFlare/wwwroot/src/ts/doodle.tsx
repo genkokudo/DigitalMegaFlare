@@ -1,8 +1,4 @@
-﻿// 何で別でReactをCDNして、こっちをコメントアウトすればいいのかわからない。一切インポートできないってこと？
-//import * as React from "react";
-//import * as ReactDOM from "react-dom";
-
-class Hello extends React.Component<{
+﻿class Hello extends React.Component<{
     /**
      * @default 'Hello Work!'
      */
