@@ -7,3 +7,32 @@
 <h1>T4実験室</h1>
 <h1>Razor実験室</h1>
 
+<div id="app"></div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @*<script src="~/src/ts/file.js" type="module"></script>
+        <script src="~/src/ts/doodle.js"></script>*@
+    <script type="text/babel">
+        class Hello extends React.Component <{ compiler?: string, framework: string }>
+        {
+            static defaultProps = {
+                compiler: 'Hello Work!'
+            }
+            render() {
+                const compiler = this.props.compiler!;
+                return (
+                <div>
+                    <div>{compiler}</div>
+                    <div>{this.props.framework}</div>
+                </div>
+                );
+            }
+        }
+        
+        const hwElement = <Hello framework="React" />;
+        ReactDOM.render(hwElement, document.getElementById('app'));
+    </script>
+}
+
+
