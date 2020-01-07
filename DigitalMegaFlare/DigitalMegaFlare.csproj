@@ -6,12 +6,6 @@
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="wwwroot\src\ts\doodle.tsx" />
-    <Content Remove="wwwroot\src\ts\file.ts" />
-    <Content Remove="wwwroot\src\ts\test.ts" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="EfCore.Shaman" Version="1.0.18351.81" />
