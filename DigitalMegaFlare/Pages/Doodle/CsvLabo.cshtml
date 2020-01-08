@@ -1,0 +1,20 @@
+﻿@page
+@model DigitalMegaFlare.CsvLaboModel
+@{
+    ViewData["Title"] = "CsvLabo";
+}
+
+<h1>CsvLabo</h1>
+
+<form asp-action="Upload" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <div class="form-group">
+        <input type="submit" value="アップロード" />
+    </div>
+</form>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @*<script src="~/src/js/doodle.js"></script>*@
+}
