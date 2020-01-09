@@ -43,32 +43,32 @@
     <div class="form-group">
         <!-- 一般項目 -->
         <div class="row">
-            <div class="col-4 d-flex align-items-center">ファイル名</div>
-            <div class="col-6"><input placeholder="Untitled" asp-for="Input.Title" class="form-control" /></div>
+            <div class="col-6 d-flex align-items-center">ファイル名</div>
+            <div class="col-4"><input placeholder="Untitled" asp-for="Input.Title" class="form-control" /></div>
             <div class="col-2 d-flex align-items-center ml-0 pl-0">.snippet</div>
         </div>
         <div class="row">
-            <div class="col-4 d-flex align-items-center">作者</div>
+            <div class="col-6 d-flex align-items-center">作者</div>
             <div class="col"><input placeholder="ginpay" asp-for="Input.Author" class="form-control" /></div>
         </div>
         <div class="row">
-            <div class="col-4 d-flex align-items-center">説明</div>
+            <div class="col-6 d-flex align-items-center">説明</div>
             <div class="col"><input placeholder="～～をする処理を書きます。" asp-for="Input.Description" class="form-control" /></div>
         </div>
         <div class="row">
-            <div class="col-4 d-flex align-items-center">ショートカットフレーズ</div>
+            <div class="col-6 d-flex align-items-center">ショートカットフレーズ</div>
             <div class="col"><input placeholder="cs_aaaa" asp-for="Input.Shortcut" class="form-control" /></div>
         </div>
         <div class="row">
-            <div class="col-4 d-flex align-items-center">言語</div>
+            <div class="col-6 d-flex align-items-center">言語</div>
             <div class="col"><select asp-for="Input.Language" asp-items="Html.GetEnumSelectList(typeof (Language))" class="form-control"></select></div>
         </div>
         <div class="row">
-            <div class="col-4 d-flex align-items-center">特殊文字</div>
+            <div class="col-6 d-flex align-items-center">特殊文字<BR>（VisualStudioの仕様上、設定しない場合'$'になります。）</div>
             <div class="col"><input placeholder="$" asp-for="Input.Delimiter" class="form-control" /></div>
         </div>
         <div class="row">
-            <div class="col-4 d-flex align-items-center">スニペットの種類</div>
+            <div class="col-6 d-flex align-items-center">スニペットの種類</div>
             <div class="col"><select asp-for="Input.Kind" asp-items="Html.GetEnumSelectList(typeof (Kind))" class="form-control"></select></div>
             <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#collapseKind" aria-expanded="false" aria-controls="collapseKind">
                 種類について
@@ -88,7 +88,8 @@
         </div>
         <hr />
         <div class="row">
-            <div class="col-4 d-flex align-items-center">テンプレート入力</div>
+            <div class="col-2 d-flex align-items-center">テンプレート入力</div>
+            <div class="col-10 d-flex align-items-center">※上の特殊文字を変数以外で使用しないように注意してください。変数は"$type$"のように書きます。</div>
             <textarea placeholder="Console.WriteLine();" asp-for="Input.Code" class="form-control" TextMode="multiline" rows="5"></textarea>
         </div>
         <!-- リスト入力項目 -->
