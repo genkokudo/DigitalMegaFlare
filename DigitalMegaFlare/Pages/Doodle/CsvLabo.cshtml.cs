@@ -15,24 +15,37 @@ namespace DigitalMegaFlare
         {
 
         }
-
-        public void Upload(IFormFile file)
+        public void OnPost(IFormFile file)
         {
-            if (ModelState.IsValid)
+            // アップロード処理
+            // 一時ファイルのパスを取得
+            var filePath = Path.GetTempFileName();
+            // 各ファイルについて、ストリームを作成して
+            // その一時ファイルパスにコピー
+            if (file.Length > 0)
             {
-                // アップロード処理
-                // 一時ファイルのパスを取得
-                var filePath = Path.GetTempFileName();
-                // 各ファイルについて、ストリームを作成して
-                // その一時ファイルパスにコピー
-                if (file.Length > 0)
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        //file.CopyTo(stream);
-                    }
+                    //file.CopyTo(stream);
                 }
             }
+        }
+
+        public ActionResult OnPostUploadAsync(IFormFile file)
+        {
+            // アップロード処理
+            // 一時ファイルのパスを取得
+            var filePath = Path.GetTempFileName();
+            // 各ファイルについて、ストリームを作成して
+            // その一時ファイルパスにコピー
+            if (file.Length > 0)
+            {
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    //file.CopyTo(stream);
+                }
+            }
+            return Page();
         }
     }
 }

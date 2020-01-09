@@ -17,5 +17,12 @@ namespace DigitalMegaFlare.Controllers
             return Ok();
             //return File(new byte[], "application/pdf", $"stampHistory{id}.pdf");
         }
+
+        // using Microsoft.AspNetCore.Mvc
+        public ActionResult Test(IFormFile file)
+        {
+            return Ok();
+            //return File(new byte[], "application/pdf", $"stampHistory{id}.pdf");
+        }
     }
 }

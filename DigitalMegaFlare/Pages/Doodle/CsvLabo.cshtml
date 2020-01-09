@@ -6,10 +6,32 @@
 
 <h1>CsvLabo</h1>
 
-<form asp-action="Upload" enctype="multipart/form-data">
+<!-- コントローラを呼ぶ -->
+<!-- <form id="form" method="post" enctype="multipart/form-data" asp-controller="Doodle" asp-action="Test">
     <input type="file" name="file" />
-    <div class="form-group">
-        <input type="submit" value="アップロード" />
+    <button type="submit">決定</button>
+</form> -->
+@*<form id="form" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <button type="submit">決定</button>
+    </form>*@
+
+<!--accept=".csv"-->
+<form id="form" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept="image/png, image/jpeg" />
+    <input type="submit" asp-page-handler="Upload" value="決定" />
+</form>
+
+<!-- 飾る場合 -->
+<form id="form" method="post" enctype="multipart/form-data">
+    <div class="input-group mt-2">
+        <div class="custom-file">
+            <input type="file" name="file" id="fileInput" accept="image/png, image/jpeg" class="custom-file-input" />
+            <label id="fileLabel" for="fileInput" class="custom-file-label">画像ファイルを選択</label>
+        </div>
+        <div class="input-group-append">
+            <button type="button" class="btn btn-outline-secondary reset">取消</button>
+        </div>
     </div>
 </form>
 
@@ -17,4 +39,15 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     @*<script src="~/src/js/doodle.js"></script>*@
+    <script>
+        //ファイルの取消（飾る場合）
+        $('.reset').click(function () {
+            $('#fileLabel').html('画像ファイルを選択');
+            $('#fileInput').val('');
+            setImage();
+        });
+        $('#fileInput').on('change', function (e) {
+            $('#fileLabel').html($(this)[0].files[0].name);
+        });
+    </script>
 }
