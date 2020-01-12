@@ -1,0 +1,13 @@
+﻿@page
+@model DigitalMegaFlare.Pages.SimpleGenerate.Razor.CsvUploadModel
+@{
+    ViewData["Title"] = "CsvUpload";
+}
+
+<h1>CsvUpload</h1>
+
+<form id="form" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv" />
+    <input type="submit" asp-page-handler="Upload" value="送信" />
+</form>
+

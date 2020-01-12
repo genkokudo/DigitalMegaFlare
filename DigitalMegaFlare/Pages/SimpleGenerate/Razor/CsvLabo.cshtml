@@ -1,0 +1,27 @@
+﻿@page
+@model DigitalMegaFlare.Pages.SimpleGenerate.Razor.CsvLaboModel
+@{
+    ViewData["Title"] = "CsvLabo";
+    if (ViewData["Error"] != null)
+    {
+    <div role="alert" class="alert fade show alert-danger">@ViewData["Error"]</div>
+    }
+}
+
+<h1>CsvLabo</h1>
+
+<div id="TopAlert" class="row d-block"></div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @*<script src="~/src/js/doodle.js"></script>*@
+    <script>
+        // アラートを表示して2秒で閉じる
+        var divArert = $('<div role="alert" class="alert fade show alert-success">更新が完了しました</div>')
+        $('#TopAlert').append(divArert);
+
+        setTimeout(() => {
+            divArert.alert('close');
+        }, 2000);
+    </script>
+}

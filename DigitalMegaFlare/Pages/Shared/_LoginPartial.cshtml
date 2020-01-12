@@ -16,9 +16,18 @@
 }
 else
 {
+    <!-- 開発系 -->
+    <environment include="Development">
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
     </li>
+    </environment>
+    <!-- 開発系以外 -->
+    <environment exclude="Development">
+    <li class="nav-item">
+        <label>アカウント作成は現在受け付けていません</label>
+    </li>
+    </environment>
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
     </li>

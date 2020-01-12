@@ -10,6 +10,9 @@ using DigitalMegaFlare.Models;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate
 {
+    /// <summary>
+    /// 自動生成実験室
+    /// </summary>
     public class IndexModel : PageModel
     {
         //private readonly DigitalMegaFlare.Data.ApplicationDbContext _context;
