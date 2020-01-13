@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,20 +17,73 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     [Authorize]
     public class CsvLaboModel : PageModel
     {
-        /// <summary>
-        /// パス取得に使用する
-        /// </summary>
-        private readonly IWebHostEnvironment _hostEnvironment = null;
-        public CsvLaboModel(IWebHostEnvironment hostEnvironment)
+        public Result Data { get; private set; }
+
+        private readonly IMediator _mediator = null;
+
+        public async Task<IActionResult> OnGetAsync()
         {
-            _hostEnvironment = hostEnvironment;
+            Data = await _mediator.Send(new Query { Id = 1 });
+            if (Data.RawCsv.Count == 0)
+            {
+                ViewData["Error"] = "ファイルが存在しません。";
+            }
+            return Page();
         }
 
         public void OnGet()
         {
+        }
+
+        public IActionResult OnPost()
+        {
+            return Page();
+        } 
+    }
+
+    /// <summary>検索条件</summary>
+    public class Query : IRequest<Result>
+    {
+        public long Id { get; set; }
+    }
+
+    /// <summary>検索結果</summary>
+    public class Result
+    {
+        /// <summary>CSVの内容</summary> 
+        public List<string[]> RawCsv { get; set; }
+    }
+
+    /// <summary> 
+    /// 検索ハンドラ 
+    /// QueryをSendすると動作し、Resultを返す 
+    /// </summary> 
+    public class QueryHandler : IRequestHandler<Query, Result>
+    {
+        /// <summary>
+        /// パス取得に使用する
+        /// </summary>
+        private readonly IWebHostEnvironment _hostEnvironment = null;
+        public QueryHandler(IWebHostEnvironment hostEnvironment)
+        {
+            _hostEnvironment = hostEnvironment;
+        }
+
+        /// <summary>
+        /// 検索の方法を定義する
+        /// IRequestHandlerで実装することになっている
+        /// </summary>
+        /// <param name="query">検索条件</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<Result> Handle(Query query, CancellationToken token)
+        {
+
             // ファイルアクセス処理
             var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files");
 
+            // ファイルの読み込み
+            List<string[]> csv = new List<string[]>();
             using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
             {
                 // ファイル情報を取得
@@ -37,46 +92,25 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                 // ファイル存在チェック
                 if (fileInfo.Exists)
                 {
-                    // TODO: fileInfo.PhysicalPath がフルパスになるので、これに対して処理を行う
-                }
-                else
-                {
-                    ViewData["Error"] = "ファイルが存在しません。";
+                    // 改行コード、コンマで分けて格納する
+                    var data = File.ReadAllText(fileInfo.PhysicalPath);
+                    data = data.Replace("\r\n", "\n");
+                    data = data.Replace("\r", "\n");
+                    data = data.Trim('\n');
+                    var lines = data.Split('\n');
+                    foreach (var item in lines)
+                    {
+                        csv.Add(item.Split(','));
+                    }
                 }
             }
 
-            //// 改行コード、コンマで分けて格納する
-            //var data = File.ReadAllText(filePath);
-            //data = data.Replace("\r\n", "\n");
-            //data = data.Replace("\r", "\n");
-            //data = data.Trim('\n');
-            //var lines = data.Split('\n');
-            //List<string[]> splitedLines = new List<string[]>();
-            //foreach (var item in lines)
-            //{
-            //    splitedLines.Add(item.Split(','));
-            //}
-
-            //RawCsv = splitedLines.ToArray();
-        }
-
-        public ActionResult OnPostUpload(IFormFile file)
-        {
-            // アップロード処理
-            // 一時ファイルのパスを取得
-            var filePath = Path.GetTempFileName();
-            // 各ファイルについて、ストリームを作成して
-            // その一時ファイルパスにコピー
-            if (file.Length > 0)
+            // 検索結果の格納
+            var result = new Result
             {
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    //file.CopyTo(stream);
-                }
-            }
-            return Page();
+                RawCsv = csv
+            };
+            return await Task.FromResult(result);
         }
-
-
     }
 }

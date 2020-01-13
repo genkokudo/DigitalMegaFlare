@@ -1,27 +1,64 @@
 ﻿@page
 @model DigitalMegaFlare.Pages.SimpleGenerate.Razor.CsvLaboModel
+@using Newtonsoft.Json;
 @{
     ViewData["Title"] = "CsvLabo";
     if (ViewData["Error"] != null)
     {
-    <div role="alert" class="alert fade show alert-danger">@ViewData["Error"]</div>
+        <div role="alert" class="alert fade show alert-danger">@ViewData["Error"]</div>
     }
 }
 
 <h1>CsvLabo</h1>
 
-<div id="TopAlert" class="row d-block"></div>
+<style>
+    th, td {
+        /* 改行せずに表示する */
+        white-space: nowrap;
+    }
+</style>
+
+<!-- 表 -->
+<div id="StampTablePanel" class="row mt-3">
+    <div class="col-8 p-0">
+        <!-- 基本情報 -->
+        <table id="CsvTable" class="table table-striped table-bordered">
+            <thead>
+                <tr id="CsvThead">
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    @*<script src="~/src/js/doodle.js"></script>*@
     <script>
-        // アラートを表示して2秒で閉じる
-        var divArert = $('<div role="alert" class="alert fade show alert-success">更新が完了しました</div>')
-        $('#TopAlert').append(divArert);
+        var _csv = @Html.Raw(JsonConvert.SerializeObject(Model.Data.RawCsv));
 
-        setTimeout(() => {
-            divArert.alert('close');
-        }, 2000);
+        // CSV生データを表示する
+        if (_csv.length > 0) {
+            $('#CsvThead').append('<th>行</th>');
+            _csv[0].forEach((value) => {
+                $('#CsvThead').append('<th>' + value + '</th>');
+            });
+
+            for (var i = 1; i < _csv.length; i++) {
+                var tbodyTr = $('#CsvTable').append('<tbody>').append('<td row="' + i + '">' + i + '</td>');
+                for (var j = 0; j < _csv[i].length; j++) {
+                    var id = 'row="' + i + '" id="' + _csv[0][j] + '_' + i + '"';
+                    if (_csv[i][j].length <= 30) {
+                        tbodyTr.append('<td ' + id + '>' + _csv[i][j] + '</td>');
+                    } else {
+                        tbodyTr.append('<td ' + id + ' style="font-weight:bolder; color:blue;">※30字を超えているため省略されました</td>');
+                    }
+                }
+            }
+        }
+
+        // 上記の処理は重いので完全に終わった後に実行する
+        $(function () {
+        });
+
     </script>
 }

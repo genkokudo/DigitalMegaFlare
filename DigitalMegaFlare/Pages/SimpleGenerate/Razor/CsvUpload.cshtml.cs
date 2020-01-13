@@ -4,31 +4,48 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
 {
     public class CsvUploadModel : PageModel
     {
+        /// <summary>
+        /// パス取得に使用する
+        /// </summary>
+        private readonly IWebHostEnvironment _hostEnvironment = null;
+        public CsvUploadModel(IWebHostEnvironment hostEnvironment)
+        {
+            _hostEnvironment = hostEnvironment;
+        }
+
         public void OnGet()
         {
 
         }
 
-        public ActionResult OnPostUpload(IFormFile file)
+        public async Task<ActionResult> OnPostUploadAsync(IFormFile file)
         {
-            // アップロード処理
-            // 一時ファイルのパスを取得
-            var filePath = Path.GetTempFileName();
-            // 各ファイルについて、ストリームを作成して
-            // その一時ファイルパスにコピー
-            if (file.Length > 0)
+
+            // アップロードされたファイルをサーバに保存する
+            using (var fileStream = file.OpenReadStream())
             {
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files");
+
+                using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
                 {
-                    file.CopyTo(stream);
+                    // ファイル情報を取得
+                    IFileInfo fileInfo = provider.GetFileInfo("file.csv");
+
+                    using (var stream = new FileStream(fileInfo.PhysicalPath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
                 }
             }
             return Page();
