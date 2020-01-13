@@ -24,9 +24,13 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         public async Task<IActionResult> OnGetAsync()
         {
             Data = await _mediator.Send(new Query { Id = 1 });
-            if (Data.RawCsv.Count == 0)
+            if (Data.RawCsv == null)
             {
                 ViewData["Error"] = "ファイルが存在しません。";
+            }
+            else if (Data.RawCsv.Count == 0)
+            {
+                ViewData["Error"] = "ファイルが空です";
             }
             return Page();
         }
@@ -83,15 +87,35 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
             var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files");
 
             // ファイルの読み込み
-            List<string[]> csv = new List<string[]>();
-            using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
+            var csv = ReadCsv(fileDirectry);
+
+            // 検索結果の格納
+            var result = new Result
+            {
+                RawCsv = csv
+            };
+            return await Task.FromResult(result);
+        }
+
+        /// <summary>
+        /// CSVを読み込む
+        /// </summary>
+        /// <param name="directry">ディレクトリ</param>
+        /// <param name="filename">拡張子付きのファイル名</param>
+        /// <returns></returns>
+        private List<string[]> ReadCsv(string directry, string filename = "file.csv")
+        {
+            // ファイルの読み込み
+            List<string[]> csv = null;
+            using (PhysicalFileProvider provider = new PhysicalFileProvider(directry))
             {
                 // ファイル情報を取得
-                IFileInfo fileInfo = provider.GetFileInfo("file.csv");
+                IFileInfo fileInfo = provider.GetFileInfo(filename);
 
                 // ファイル存在チェック
                 if (fileInfo.Exists)
                 {
+                    csv = new List<string[]>();
                     // 改行コード、コンマで分けて格納する
                     var data = File.ReadAllText(fileInfo.PhysicalPath);
                     data = data.Replace("\r\n", "\n");
@@ -104,13 +128,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                     }
                 }
             }
-
-            // 検索結果の格納
-            var result = new Result
-            {
-                RawCsv = csv
-            };
-            return await Task.FromResult(result);
+            return csv;
         }
     }
 }
