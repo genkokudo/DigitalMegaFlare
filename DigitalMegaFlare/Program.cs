@@ -93,17 +93,18 @@ namespace DigitalMegaFlare
         //}
         #endregion
 
-        //public static IHostBuilder CreateHostBuilder(string[] args) =>
-        //    Host.CreateDefaultBuilder(args)
-        //        .ConfigureWebHostDefaults(webBuilder =>
-        //        {
-        //            webBuilder.UseStartup<Startup>();
-        //        });
-
-        // Core1系で毎回書いていたコードをラップしている
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+        /// <summary>
+        /// WebHostを作成します。
+        /// 3.0以降の書き方
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     // NLog 以外で設定された Provider の無効化.
@@ -113,5 +114,19 @@ namespace DigitalMegaFlare
                 })
                 // NLog を有効にする.
                 .UseNLog();
+
+        //// Core1系で毎回書いていたコードをラップしている
+        //public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        //    WebHost.CreateDefaultBuilder(args)
+        //        .UseStartup<Startup>()
+        //        .ConfigureLogging((hostingContext, logging) =>
+        //        {
+        //            // NLog 以外で設定された Provider の無効化.
+        //            logging.ClearProviders();
+        //            // 最小ログレベルの設定.
+        //            logging.SetMinimumLevel(LogLevel.Trace);
+        //        })
+        //        // NLog を有効にする.
+        //        .UseNLog();
     }
 }
