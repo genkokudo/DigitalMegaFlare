@@ -27,11 +27,8 @@ namespace DigitalMegaFlare
                 .AddJsonFile("appsettings.json", optional: true)
                 .Build();
 
-            // 使用するポート
-            var port = "http://0.0.0.0:" + config.GetValue<string>(SystemConstants.Port);
-
             // Webホスト作成
-            var host = CreateWebHostBuilder(args).UseUrls(port).Build();
+            var host = CreateWebHostBuilder(args, config.GetValue<string>(SystemConstants.Port)).Build();
 
             // DBに初期値を登録
             using (var scope = host.Services.CreateScope())
@@ -98,12 +95,14 @@ namespace DigitalMegaFlare
         /// 3.0以降の書き方
         /// </summary>
         /// <param name="args"></param>
+        /// <param name="port">使用するポート</param>
         /// <returns></returns>
-        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
+        public static IHostBuilder CreateWebHostBuilder(string[] args, string port) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls("http://0.0.0.0:" + port);
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
