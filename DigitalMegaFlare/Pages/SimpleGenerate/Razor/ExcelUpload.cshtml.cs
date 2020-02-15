@@ -46,9 +46,13 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
             return Page();
         }
 
-        public async Task<ActionResult> OnPostUploadAsync(IFormFile file)
+        /// <summary>
+        /// Excelアップロードボタン
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> OnPostUploadAsync(IFormFile file)
         {
-
             // アップロードされたファイルをサーバに保存する
             using (var fileStream = file.OpenReadStream())
             {
@@ -65,7 +69,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                     }
                 }
             }
-            return Page();
+            return await OnGetAsync();
         }
     }
 
@@ -78,6 +82,9 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     /// <summary>検索結果</summary>
     public class ExcelUploadResult
     {
+        /// <summary>シート名</summary> 
+        public List<string> SheetNames { get; set; }
+
         /// <summary>Excelの内容</summary> 
         public List<List<List<string>>> RawExcel { get; set; }
     }
@@ -111,13 +118,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
             var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files");
 
             // ファイルの読み込み
-            var xlsx = ReadExcel(fileDirectry);
-
             // 検索結果の格納
-            var result = new ExcelUploadResult
-            {
-                RawExcel = xlsx
-            };
+            var result = ReadExcel(fileDirectry);
             return await Task.FromResult(result);
         }
 
@@ -127,9 +129,10 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         /// <param name="directry">ディレクトリ</param>
         /// <param name="filename">拡張子付きのファイル名</param>
         /// <returns></returns>
-        private List<List<List<string>>> ReadExcel(string directry, string filename = "file.xlsx")
+        private ExcelUploadResult ReadExcel(string directry, string filename = "file.xlsx")
         {
             // ファイルの読み込み
+            List<string> sheetNames = new List<string>();
             List<List<List<string>>> xlsx = new List<List<List<string>>>();
             using (PhysicalFileProvider provider = new PhysicalFileProvider(directry))
             {
@@ -139,45 +142,67 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                 // ファイル存在チェック
                 if (fileInfo.Exists)
                 {
-                    xlsx = new List<List<List<string>>>();
                     using (var wb = new XLWorkbook(fileInfo.PhysicalPath))
                     {
                         foreach (var ws in wb.Worksheets)
                         {
                             // ワークシート
-                            xlsx.Add(new List<List<string>> { new List<string>{ ws.Name } });
+                            List<List<string>> sheet = new List<List<string>>();
+
+                            // シート名を取得
+                            sheetNames.Add(ws.Name);
+
+                            //"行数:" + ws.LastCellUsed().Address.RowNumber.ToString()
+                            //"列数:" + ws.LastCellUsed().Address.ColumnNumber.ToString()
+                            //"列記号:" + ws.LastCellUsed().Address.ColumnLetter.ToString()
+
+                            for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
+                            {
+                                List<string> raw = new List<string>();
+                                for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
+                                {
+                                    raw.Add(ws.Cell(i, j).Value.ToString());
+                                }
+                                sheet.Add(raw);
+                            }
+
+                            xlsx.Add(sheet);
                         }
                     }
-                    return xlsx;
                 }
-                else
+
+                return new ExcelUploadResult
                 {
-                    return xlsx;
-                }
+                    RawExcel = xlsx,
+                    SheetNames = sheetNames
+                };
             }
         }
 
-        /// <summary>
-        /// Excelファイル作成
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private async Task<XLWorkbook> BuildExcelFile(int id)
-        {
-            var t = Task.Run(() =>
-            {
-                // ブック作成
-                var wb = new XLWorkbook();
-                // シート作成
-                var ws = wb.AddWorksheet("Sheet1");
-                // 最初のセルに値を設定
-                ws.FirstCell().SetValue(id);
-                // 保存
-                //wb.SaveAs("HelloWorld.xlsx");
-                return wb;
-            });
-            return await t;
-        }
+        #region Excelファイル作成（使ってない）
+        ///// <summary>
+        ///// Excelファイル作成
+        ///// </summary>
+        ///// <param name="id"></param>
+        ///// <returns></returns>
+        //private async Task<XLWorkbook> BuildExcelFile(int id)
+        //{
+        //    var t = Task.Run(() =>
+        //    {
+        //        // ブック作成
+        //        var wb = new XLWorkbook();
+        //        // シート作成
+        //        var ws = wb.AddWorksheet("Sheet1");
+        //        // 最初のセルに値を設定
+        //        ws.FirstCell().SetValue(id);
+        //        // 保存
+        //        //wb.SaveAs("HelloWorld.xlsx");
+        //        return wb;
+        //    });
+        //    return await t;
+        //}
+
+        #endregion
 
     }
 }
