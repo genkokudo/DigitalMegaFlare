@@ -27,11 +27,8 @@ namespace DigitalMegaFlare
                 .AddJsonFile("appsettings.json", optional: true)
                 .Build();
 
-            // 使用するポート
-            var port = "http://0.0.0.0:" + config.GetValue<string>(SystemConstants.Port);
-
             // Webホスト作成
-            var host = CreateWebHostBuilder(args).UseUrls(port).Build();
+            var host = CreateWebHostBuilder(args, config.GetValue<string>(SystemConstants.Port)).Build();
 
             // DBに初期値を登録
             using (var scope = host.Services.CreateScope())
@@ -93,17 +90,20 @@ namespace DigitalMegaFlare
         //}
         #endregion
 
-        //public static IHostBuilder CreateHostBuilder(string[] args) =>
-        //    Host.CreateDefaultBuilder(args)
-        //        .ConfigureWebHostDefaults(webBuilder =>
-        //        {
-        //            webBuilder.UseStartup<Startup>();
-        //        });
-
-        // Core1系で毎回書いていたコードをラップしている
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+        /// <summary>
+        /// WebHostを作成します。
+        /// 3.0以降の書き方
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="port">使用するポート</param>
+        /// <returns></returns>
+        public static IHostBuilder CreateWebHostBuilder(string[] args, string port) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls("http://0.0.0.0:" + port);
+                })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     // NLog 以外で設定された Provider の無効化.
@@ -113,5 +113,19 @@ namespace DigitalMegaFlare
                 })
                 // NLog を有効にする.
                 .UseNLog();
+
+        //// Core1系で毎回書いていたコードをラップしている
+        //public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        //    WebHost.CreateDefaultBuilder(args)
+        //        .UseStartup<Startup>()
+        //        .ConfigureLogging((hostingContext, logging) =>
+        //        {
+        //            // NLog 以外で設定された Provider の無効化.
+        //            logging.ClearProviders();
+        //            // 最小ログレベルの設定.
+        //            logging.SetMinimumLevel(LogLevel.Trace);
+        //        })
+        //        // NLog を有効にする.
+        //        .UseNLog();
     }
 }
