@@ -1,0 +1,72 @@
+﻿@page
+@model DigitalMegaFlare.Pages.SimpleGenerate.Razor.ExcelUploadModel
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "ExcelUpload";
+    if (ViewData["Error"] != null)
+    {
+        <div role="alert" class="alert fade show alert-danger">@ViewData["Error"]</div>
+    }
+}
+
+<style>
+    th, td {
+        /* 改行せずに表示する */
+        white-space: nowrap;
+    }
+</style>
+
+<h1>ExcelUpload</h1>
+<p>とりあえず、.xlaxをアップロードして表示します。</p>
+
+<form id="form" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".xlsx" />
+    <input type="submit" asp-page-handler="Upload" value="送信" />
+</form>
+
+<!-- 表 -->
+<div id="StampTablePanel" class="row mt-3">
+    <div class="col-8 p-0">
+        <!-- 基本情報 -->
+        <table id="CsvTable" class="table table-striped table-bordered">
+            <thead>
+                <tr id="ExcelThead">
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var _excel = @Html.Raw(JsonConvert.SerializeObject(Model.Data.RawExcel));
+
+        // Excel生データを表示する
+        if (_excel.length > 0) {
+            var _sheet = _excel[0];
+
+            $('#ExcelThead').append('<th>行</th>');
+            _sheet[0].forEach((value) => {
+                $('#ExcelThead').append('<th>' + value + '</th>');
+            });
+
+            for (var i = 1; i < _sheet.length; i++) {
+                var tbodyTr = $('#CsvTable').append('<tbody>').append('<td row="' + i + '">' + i + '</td>');
+                for (var j = 0; j < _sheet[i].length; j++) {
+                    var id = 'row="' + i + '" id="' + _sheet[0][j] + '_' + i + '"';
+                    if (_sheet[i][j].length <= 30) {
+                        tbodyTr.append('<td ' + id + '>' + _sheet[i][j] + '</td>');
+                    } else {
+                        tbodyTr.append('<td ' + id + ' style="font-weight:bolder; color:blue;">※30字を超えているため省略されました</td>');
+                    }
+                }
+            }
+        }
+
+        // 上記の処理は重いので完全に終わった後に実行する
+        $(function () {
+        });
+
+    </script>
+}

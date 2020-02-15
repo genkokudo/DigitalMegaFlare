@@ -14,16 +14,20 @@ using Microsoft.Extensions.FileProviders;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
 {
-    [Authorize]
     public class CsvLaboModel : PageModel
     {
-        public Result Data { get; private set; }
+        public CsvLaboResult Data { get; private set; }
 
         private readonly IMediator _mediator = null;
 
+        public CsvLaboModel(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
         public async Task<IActionResult> OnGetAsync()
         {
-            Data = await _mediator.Send(new Query { Id = 1 });
+            Data = await _mediator.Send(new CsvLaboQuery { Id = 1 });
             if (Data.RawCsv == null)
             {
                 ViewData["Error"] = "ファイルが存在しません。";
@@ -35,10 +39,6 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
             return Page();
         }
 
-        public void OnGet()
-        {
-        }
-
         public IActionResult OnPost()
         {
             return Page();
@@ -46,13 +46,13 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     }
 
     /// <summary>検索条件</summary>
-    public class Query : IRequest<Result>
+    public class CsvLaboQuery : IRequest<CsvLaboResult>
     {
         public long Id { get; set; }
     }
 
     /// <summary>検索結果</summary>
-    public class Result
+    public class CsvLaboResult
     {
         /// <summary>CSVの内容</summary> 
         public List<string[]> RawCsv { get; set; }
@@ -62,13 +62,13 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     /// 検索ハンドラ 
     /// QueryをSendすると動作し、Resultを返す 
     /// </summary> 
-    public class QueryHandler : IRequestHandler<Query, Result>
+    public class CsvLaboQueryHandler : IRequestHandler<CsvLaboQuery, CsvLaboResult>
     {
         /// <summary>
         /// パス取得に使用する
         /// </summary>
         private readonly IWebHostEnvironment _hostEnvironment = null;
-        public QueryHandler(IWebHostEnvironment hostEnvironment)
+        public CsvLaboQueryHandler(IWebHostEnvironment hostEnvironment)
         {
             _hostEnvironment = hostEnvironment;
         }
@@ -80,7 +80,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         /// <param name="query">検索条件</param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<Result> Handle(Query query, CancellationToken token)
+        public async Task<CsvLaboResult> Handle(CsvLaboQuery query, CancellationToken token)
         {
 
             // ファイルアクセス処理
@@ -90,7 +90,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
             var csv = ReadCsv(fileDirectry);
 
             // 検索結果の格納
-            var result = new Result
+            var result = new CsvLaboResult
             {
                 RawCsv = csv
             };
@@ -126,6 +126,10 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                     {
                         csv.Add(item.Split(','));
                     }
+                }
+                else
+                {
+                    return new List<string[]>();
                 }
             }
             return csv;

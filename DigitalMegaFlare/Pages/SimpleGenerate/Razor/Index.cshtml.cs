@@ -11,7 +11,6 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     /// <summary>
     /// Razor実験室
     /// </summary>
-    [Authorize]
     public class IndexModel : PageModel
     {
         public void OnGet()

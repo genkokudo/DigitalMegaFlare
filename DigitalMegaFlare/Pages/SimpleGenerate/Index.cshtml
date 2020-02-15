@@ -10,12 +10,14 @@
 <div class="text-center">
     @if (SignInManager.IsSignedIn(User))
     {
-        <p><a href="@Url.Content("~/SimpleGenerate/Razor")">Razor実験室</a></p>
+        // ログインしている人だけ
+        <p><a href="@Url.Content("~/SimpleGenerate/HtmlToJquery")">jQuery作成サービス（没）</a></p>
     }
     <p><a href="@Url.Content("~/SimpleGenerate/SnippetFactory")">スニペット作成サービス</a></p>
-    <p><a href="@Url.Content("~/SimpleGenerate/SandBox")">実験室</a></p>
 
-    <p><a href="@Url.Content("~/SimpleGenerate/HtmlToJquery")">jQuery作成サービス（没）</a></p>
+    <p><a href="@Url.Content("~/SimpleGenerate/Razor")">CSVからRazor生成する実験室</a></p>
+    <p><a href="@Url.Content("~/SimpleGenerate/SandBox")">ただの実験室</a></p>
+
 </div>
 
 
