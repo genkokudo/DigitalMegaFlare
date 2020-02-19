@@ -10,6 +10,7 @@ namespace DigitalMegaFlare.Data
     public class ApplicationDbContext : IdentityDbContext
     {
         public DbSet<TestData> TestDatas { get; set; }
+        public DbSet<ExcelInputHistory> ExcelInputHistories { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

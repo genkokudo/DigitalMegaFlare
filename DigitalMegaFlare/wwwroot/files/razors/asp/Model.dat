@@ -1,0 +1,56 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace @(ProjectName).Models
+{
+	/// <summary>
+	/// @(EntityDiscription)です。
+	/// </summary>
+	public class @(EntityName)Entity
+	{
+		/// <summary>
+		/// IDを取得、もしくは、設定します。
+		/// </summary>
+		[Key]
+		public long @(EntityName)Id { get; set; }
+
+		/// <summary>
+		/// 名称を取得、もしくは、設定します。
+		/// </summary>
+		[StringLength(100)]
+		public string Name { get; set; }
+
+		/// <summary>
+		/// 初期値を作成します。
+		/// </summary>
+		public static @(EntityName)Entity[] InitialData
+		{
+			get
+			{
+				var names = new[] { "1", "2", "3", "4", "5" };
+				var result = new List<@(EntityName)Entity>();
+				foreach (var name in names)
+				{
+					result.Add(new @(EntityName)Entity() { Name = name });
+				}
+				return result.ToArray();
+			}
+		}
+	}
+}
+
+
+★1つのフィールドについて
+・説明
+・名前
+・アノテーションリスト
+
+★固定ゲッターのInitialDataについて
+・IsMasterの場合のみ作成
+・値リストから全て生成可能、要Pascal→Camel変換
+・複数形の生成は無理なので、入力させる。
+
+★コーディングスタイルでパターンが増えてしまう。自分版と、会社版が必要
+
+
+

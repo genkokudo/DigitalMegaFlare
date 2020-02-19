@@ -1,0 +1,34 @@
+﻿@page
+@model DigitalMegaFlare.ExcelListModel
+@{
+    ViewData["Title"] = "ExcelList";
+}
+
+<h1>ExcelList</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>元ファイル名</th>
+            <th>エラー</th>
+            <th>取込日時(UTC)</th>
+            <th>ホスト</th>
+            <th>IPアドレス</th>
+            <th>リクエストURL</th>
+            <th>詳細</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Data.Histories)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.RawFileName)</td>
+                <td>@Html.DisplayFor(modelItem => item.InputDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.Host)</td>
+                <td>@Html.DisplayFor(modelItem => item.Ip)</td>
+                <td>@Html.DisplayFor(modelItem => item.Url)</td>
+                <td><a asp-page="./Detail" asp-route-id="@item.Id">詳細</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
