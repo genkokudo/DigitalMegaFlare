@@ -2,16 +2,16 @@
 @model DigitalMegaFlare.Pages.Doodle.IndexModel
 @{
     ViewData["Title"] = "落書き帳";
+    if (ViewData["Error"] != null)
+    {
+        <div role="alert" class="alert fade show alert-danger">@ViewData["Error"]</div>
+    }
 }
 
 <h1>落書き帳</h1>
 <p>このサイトは、ASP.NET Core 3.0, CentOS8, MariaDB, 多少の好奇心 でできています。</p>
 
-<h3>考え事</h3>
-<p>これから何作ろうかな。。。</p>
-
-<h3>@ViewData["Message"]</h3>
-
+<textarea placeholder="出力結果" class="form-control" TextMode="multiline" rows="10" readonly>@ViewData["Message"]</textarea>
 
 <form method="post">
     <button type="submit" class="btn btn-primary btn-sm">なにこれ</button>

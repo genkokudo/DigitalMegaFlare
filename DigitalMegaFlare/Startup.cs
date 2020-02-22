@@ -16,6 +16,8 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using DigitalMegaFlare.Settings;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace DigitalMegaFlare
 {
@@ -97,6 +99,7 @@ namespace DigitalMegaFlare
 
             //MediatRを使用する
             services.AddMediatR(typeof(Startup));
+
         }
 
         // ランタイムから呼ばれるメソッド 

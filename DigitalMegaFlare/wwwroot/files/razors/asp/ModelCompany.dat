@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-
-namespace @(Model.Project.Name).Models
+// 会社用
+namespace @(Model.ProjectName).Models
 {
 	/// <summary>
-	/// @(Model.ModelList.Comment)
+	/// @(Model.Comment)です。
 	/// </summary>
-	public class @(Model.ModelList.Name)
+	public class @(EntityName)Entity
 	{
 		/// <summary>
-		/// 通し番号
+		/// IDを取得、もしくは、設定します。
 		/// </summary>
 		[Key]
-		public long Id { get; set; }
+		public long @(EntityName)Id { get; set; }
 
 		/// <summary>
 		/// 名称を取得、もしくは、設定します。
@@ -23,15 +23,15 @@ namespace @(Model.Project.Name).Models
 		/// <summary>
 		/// 初期値を作成します。
 		/// </summary>
-		public static @(Model.ModelList.Name) InitialData
+		public static @(EntityName)Entity[] InitialData
 		{
 			get
 			{
 				var names = new[] { "1", "2", "3", "4", "5" };
-				var result = new List<@(Model.ModelList.Name)>();
+				var result = new List<@(EntityName)Entity>();
 				foreach (var name in names)
 				{
-					result.Add(new @(Model.ModelList.Name)() { Name = name });
+					result.Add(new @(EntityName)Entity() { Name = name });
 				}
 				return result.ToArray();
 			}
@@ -50,6 +50,7 @@ namespace @(Model.Project.Name).Models
 ・値リストから全て生成可能、要Pascal→Camel変換
 ・複数形の生成は無理なので、入力させる。
 
+★コーディングスタイルでパターンが増えてしまう。自分版と、会社版が必要
 
 
 
