@@ -13,37 +13,39 @@ namespace @(Model.Project.Name).Models
 		/// </summary>
 		[Key]
 		public long Id { get; set; }
-
-		/// <summary>
-		/// 名称を取得、もしくは、設定します。
-		/// </summary>
-		[StringLength(100)]
-		public string Name { get; set; }
-
-		/// <summary>
-		/// 初期値を作成します。
-		/// </summary>
-		public static @(Model.ModelList.Name) InitialData
-		{
-			get
-			{
-				var names = new[] { "1", "2", "3", "4", "5" };
-				var result = new List<@(Model.ModelList.Name)>();
-				foreach (var name in names)
-				{
-					result.Add(new @(Model.ModelList.Name)() { Name = name });
-				}
-				return result.ToArray();
-			}
+		@foreach(var item in Model.ModelList.FieldList){
+		@* フィールドのリスト *@
+		var attribute = string.Empty;
+		if(!string.IsNullOrWhiteSpace(item.Attribute)){
+			attribute = $"\n\t\t{item.Attribute}";
+		}
+		@:
+		@:/// <summary>
+		@:/// @(item.Comment)
+		@:/// </summary>@(attribute)
+		@:public @(item.Type) @(item.Name) { get; set; }
+		}
+		@if(Model.ModelList.IsMaster){
+		@:/// <summary>
+		@:/// 初期値を作成します。
+		@:/// </summary>
+		@:public static @(Model.ModelList.Name) InitialData
+		@:{
+		@:	get
+		@:	{
+		@:		var names = new[] { "1", "2", "3", "4", "5" };
+		@:		var result = new List<@(Model.ModelList.Name)>();
+		@:		foreach (var name in names)
+		@:		{
+		@:			result.Add(new @(Model.ModelList.Name)() { Name = name });
+		@:		}
+		@:		return result.ToArray();
+		@:	}
+		@:}
 		}
 	}
 }
 
-
-★1つのフィールドについて
-・説明
-・名前
-・アノテーションリスト
 
 ★固定ゲッターのInitialDataについて
 ・IsMasterの場合のみ作成

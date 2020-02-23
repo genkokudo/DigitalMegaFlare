@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ClosedXML.Excel;
 using DigitalMegaFlare.Data;
 using DigitalMegaFlare.Models;
+using DigitalMegaFlare.Pages.SimpleGenerate.Razor;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -56,13 +59,17 @@ namespace DigitalMegaFlare.Pages.Doodle
                 // ファイル存在チェック
                 if (fileInfo.Exists)
                 {
+                    // Razorスクリプト読み込み
                     var template = System.IO.File.ReadAllText(fileInfo.PhysicalPath);
 
-                    //var template = "Name: @Model.Name, Age: @Model.Age";
-                    var Project = new { Name = "DigitalMegaFlare" };
-                    var ModelList = new { Name = "Test", Comment = "テストモデル" };
-                    var model = new { Project = Project, ModelList = ModelList };
+                    // Excelから読み込み
+                    var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files", "excels");
+                    var excel = ReadExcel(excelDirectry, "Model.xlsx");
 
+                    // Modelの作成
+                    var model = CreateModel(excel);
+
+                    // 生成
                     string result = await engine.CompileRenderStringAsync("templateKey", template, model);
 
                     ViewData["Message"] = result;
@@ -75,16 +82,90 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             return Page();
 
-//            ■匿名型の動的作成 
-            //dynamic tmp2 = new ExpandoObject(); 
-            //var dic = new Dictionary<string, object>() { { "name", "hogehoge" }, { "age", 10 } }; 
- 
-            //IDictionary<string, object> wk = tmp2; 
-            //foreach (var item in dic) { wk.Add(item.Key, item.Value); } 
- 
-            //Console.WriteLine("----- tmp2 -----"); 
-            //Console.WriteLine(tmp2.name); 
-            //Console.WriteLine(tmp2.age); 
+        }
+
+        /// <summary>
+        /// Razorに入力するModelを作成する
+        /// </summary>
+        /// <returns></returns>
+        private dynamic CreateModel(ExcelUploadResult excel)
+        {
+
+            // TODO:組み立て
+            dynamic project = InputDynamic(new Dictionary<string, object>() { { "Name", "DigitalMegaFlare" } });
+            dynamic fieldListRow0 = InputDynamic(new Dictionary<string, object>() { { "Name", "Name" }, { "Comment", "名前" }, { "Attribute", "[StringLength(100)]" }, { "Type", "string" } });
+            dynamic fieldListRow1 = InputDynamic(new Dictionary<string, object>() { { "Name", "Score" }, { "Comment", "点数" }, { "Attribute", "" }, { "Type", "int" } });
+            dynamic fieldList = new List<dynamic> { fieldListRow0, fieldListRow1 };
+            dynamic modelList = InputDynamic(new Dictionary<string, object>() { { "Name", "Test" }, { "Comment", "テストモデル" }, { "IsMaster", false }, { "FieldList", fieldList } });
+            dynamic model = InputDynamic(new Dictionary<string, object>() { { "Project", project }, { "ModelList", modelList } });
+
+            return model;
+        }
+
+        /// <summary>
+        /// Excelを読み込む
+        /// </summary>
+        /// <param name="directry">ディレクトリ</param>
+        /// <param name="filename">拡張子付きのファイル名</param>
+        /// <returns></returns>
+        private ExcelUploadResult ReadExcel(string directry, string filename = "Model.xlsx")
+        {
+            // ファイルの読み込み
+            List<string> sheetNames = new List<string>();
+            List<List<List<string>>> xlsx = new List<List<List<string>>>();
+            using (PhysicalFileProvider provider = new PhysicalFileProvider(directry))
+            {
+                // ファイル情報を取得
+                IFileInfo fileInfo = provider.GetFileInfo(filename);
+
+                // ファイル存在チェック
+                if (fileInfo.Exists)
+                {
+                    using (var wb = new XLWorkbook(fileInfo.PhysicalPath))
+                    {
+                        foreach (var ws in wb.Worksheets)
+                        {
+                            // ワークシート
+                            List<List<string>> sheet = new List<List<string>>();
+
+                            // シート名を取得
+                            sheetNames.Add(ws.Name);
+
+                            for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
+                            {
+                                List<string> raw = new List<string>();
+                                for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
+                                {
+                                    raw.Add(ws.Cell(i, j).Value.ToString());
+                                }
+                                sheet.Add(raw);
+                            }
+
+                            xlsx.Add(sheet);
+                        }
+                    }
+                }
+
+                return new ExcelUploadResult
+                {
+                    RawExcel = xlsx,
+                    SheetNames = sheetNames
+                };
+            }
+        }
+
+        /// <summary>
+        /// 動的にdynamic型を生成する
+        /// </summary>
+        /// <param name="Fields">フィールド名とそのオブジェクト(このメソッドで生成したdynamicでも良い)の組み合わせ</param>
+        /// <returns></returns>
+        private dynamic InputDynamic(Dictionary<string, object> Fields)
+        {
+            dynamic result = new ExpandoObject();
+            IDictionary<string, object> work = result;
+            foreach (var item in Fields) { work.Add(item.Key, item.Value); }
+
+            return result;
         }
     }
 
