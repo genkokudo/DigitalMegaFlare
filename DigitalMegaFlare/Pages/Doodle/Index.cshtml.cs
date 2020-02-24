@@ -123,11 +123,11 @@ namespace DigitalMegaFlare.Pages.Doodle
         }
 
         /// <summary>
-        /// シート内のParent列を取得する
+        /// シート内の指定した列の番号を取得する
         /// </summary>
         /// <param name="sheet"></param>
         /// <returns></returns>
-        private int GetParentIndex(List<List<string>> sheet)
+        private int GetIndex(List<List<string>> sheet, string name)
         {
             var result = -1;
 
@@ -135,7 +135,7 @@ namespace DigitalMegaFlare.Pages.Doodle
             {
                 for (int i = 0; i < sheet[0].Count; i++)
                 {
-                    if (sheet[0][i] == "Parent")
+                    if (sheet[0][i] == name)
                     {
                         return i;
                     }
@@ -156,7 +156,7 @@ namespace DigitalMegaFlare.Pages.Doodle
                 var sheet = excel[sheetName];
 
                 // Parentの列番号を取得
-                var parentIndex = GetParentIndex(sheet);
+                var parentIndex = GetIndex(sheet, "Parent");
 
                 // Parentがある場合
                 if (parentIndex >= 0)
@@ -192,64 +192,55 @@ namespace DigitalMegaFlare.Pages.Doodle
         #endregion
 
         #region MakeChildData:子データ作成
-        ///// <summary>
-        ///// 子データを先に作っておきます
-        ///// </summary>
-        ///// <param name="excel"></param>
-        ///// <param name="errors"></param>
-        ///// <returns>0:親Sheet名、1:子Sheet名重複なし</returns>
-        //private Dictionary<string, List<string>> MakeChildData(Dictionary<string, List<List<string>>> excel, List<string> errors)
-        //{
-        //    var childList = new Dictionary<string, List<string>>();
+        /// <summary>
+        /// 子データを先に作っておきます
+        /// </summary>
+        /// <param name="excel"></param>
+        /// <param name="errors"></param>
+        /// <returns>0:親Sheet名、1:子Sheet名重複なし</returns>
+        private Dictionary<string, List<string>> MakeChildData(Dictionary<string, List<List<string>>> excel, List<string> errors)
+        {
+            var childList = new Dictionary<string, List<string>>();
 
-        //    foreach (var sheetName in excel.Keys)
-        //    {
-        //        if (sheetName.EndsWith("List"))
-        //        {
-        //            // リスト
-        //            var sheet = excel[sheetName];
+            foreach (var sheetName in excel.Keys)
+            {
+                if (sheetName.EndsWith("List"))
+                {
+                    // リスト
+                    var sheet = excel[sheetName];
+                    var parentIndex = GetIndex(sheet, "Parent");
+                    if (sheet.Count > 2)
+                    {
+                        // Parentがある場合
+                        if (parentIndex > 0)
+                        {
+                            for (int i = 2; i < sheet.Count; i++)
+                            {
+                                if (!sheet[i][parentIndex].Contains("."))
+                                {
+                                    errors.Add($"Parentに'.'が入ってない。sheet:{sheetName} row:{i} column:{parentIndex} value:{sheet[i][parentIndex]}");
+                                }
+                                else
+                                {
+                                    // 子情報を登録する
+                                    var splited = sheet[i][parentIndex].Split('.');
 
-        //            if (sheet.Count > 2)
-        //            {
-        //                var parentIndex = -1;
-        //                for (int i = 0; i < sheet[0].Count; i++)
-        //                {
-        //                    if (sheet[0][i] == "Parent")
-        //                    {
-        //                        parentIndex = i;
-        //                        break;
-        //                    }
-        //                }
-        //                // Parentがある場合
-        //                if (parentIndex > 0)
-        //                {
-        //                    for (int i = 2; i < sheet.Count; i++)
-        //                    {
-        //                        if (!sheet[i][parentIndex].Contains("."))
-        //                        {
-        //                            errors.Add($"Parentに'.'が入ってない。sheet:{sheetName} row:{i} column:{parentIndex} value:{sheet[i][parentIndex]}");
-        //                        }
-        //                        else
-        //                        {
-        //                            // 子情報を登録する
-        //                            var splited = sheet[i][parentIndex].Split('.');
-
-        //                            if (!childList.Keys.Contains(splited[0]))
-        //                            {
-        //                                childList.Add(splited[0], new List<string>());
-        //                            }
-        //                            if (!childList[splited[0]].Contains(splited[1]))
-        //                            {
-        //                                childList[splited[0]].Add(splited[1]);
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return childList;
-        //}
+                                    if (!childList.Keys.Contains(splited[0]))
+                                    {
+                                        childList.Add(splited[0], new List<string>());
+                                    }
+                                    if (!childList[splited[0]].Contains(splited[1]))
+                                    {
+                                        childList[splited[0]].Add(splited[1]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return childList;
+        }
         #endregion
 
         /// <summary>
@@ -259,7 +250,7 @@ namespace DigitalMegaFlare.Pages.Doodle
         /// <param name="parentName">親の名前</param>
         /// <param name="parentKey">親のキー</param>
         /// <param name="childSheetName">子の名前( = 親のフィールド名)</param>
-        private void addChildrenData(Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>> children, string parentName, string parentKey, string childSheetName, dynamic data)
+        private void AddChildrenData(Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>> children, string parentName, string parentKey, string childSheetName, dynamic data)
         {
             if (!children.ContainsKey(parentName))
             {
@@ -291,6 +282,9 @@ namespace DigitalMegaFlare.Pages.Doodle
             // 各シートのデータ：キーはシート名
             var dataList = new Dictionary<string, dynamic>();
 
+            // 子情報取得
+            var childList = MakeChildData(excel, errors);
+
             // データ作成
             foreach (var sheetName in sequence)
             {
@@ -314,8 +308,11 @@ namespace DigitalMegaFlare.Pages.Doodle
                     if (sheet.Count > 2)
                     {
                         // 親があるか
-                        var parentIndex = GetParentIndex(sheet);
-                        
+                        var parentIndex = GetIndex(sheet, "Parent");
+
+                        // キー取得
+                        var keyIndex = GetIndex(sheet, "Key");
+
                         // 親別、親が無い場合はシート全体のデータ（親キー、1行データ）
                         var dataByParent = new Dictionary<string, List<dynamic>>();
 
@@ -324,8 +321,8 @@ namespace DigitalMegaFlare.Pages.Doodle
                         for (int row = 2; row < sheet.Count; row++)
                         {
                             // 1行読む
-                            var key = "-1";
-                            var data = new Dictionary<string, object>();
+                            var parentKey = "-1";
+                            var rowData = new Dictionary<string, object>();
                             for (int col = 0; col < sheet[row].Count; col++)
                             {
                                 if(col == parentIndex)
@@ -333,22 +330,35 @@ namespace DigitalMegaFlare.Pages.Doodle
                                     // 親参照はスクリプトデータから除外
                                     var split = sheet[row][col].Split(".");
                                     parentName = split[0];
-                                    key = split[1];
+                                    parentKey = split[1];
+                                }
+                                else if (col == keyIndex)
+                                {
+                                    var key = sheet[row][col];
+
+                                    // 子を追加
+                                    if (childList.ContainsKey(sheetName))
+                                    {
+                                        var childNames = childList[sheetName];
+                                        foreach (var childName in childNames)
+                                        {
+                                            rowData.Add(childName, children[sheetName][key][childName]);    // ModelListがないって言われる
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    data.Add(sheet[0][col], sheet[row][col]);
+                                    rowData.Add(sheet[0][col], sheet[row][col]);
                                 }
                             }
-                            // TODO:子を追加
-                            // data.Add(子のシート名, children[sheetName][この行のキー][子のシート名]);   // 子情報いるじゃん
+
 
                             // 親Key別に追加
-                            if (dataByParent.ContainsKey(key))
+                            if (!dataByParent.ContainsKey(parentKey))
                             {
-                                dataByParent.Add(key, new List<dynamic>());
+                                dataByParent.Add(parentKey, new List<dynamic>());
                             }
-                            dataByParent[key].Add(InputDynamic(data));  // 親キーの種類だけ件数入ってるよ
+                            dataByParent[parentKey].Add(InputDynamic(rowData));  // dataByParentは、親キーの種類だけ件数入ってるよ
                         }
 
                         foreach (var dataByParentKey in dataByParent.Keys)
@@ -356,7 +366,7 @@ namespace DigitalMegaFlare.Pages.Doodle
                             if (parentIndex >= 0)
                             {
                                 // 親がある場合は、データを溜めておく
-                                addChildrenData(children, parentName, dataByParentKey, sheetName, dataByParent[dataByParentKey]);
+                                AddChildrenData(children, parentName, dataByParentKey, sheetName, dataByParent[dataByParentKey]);
                             }
                             else
                             {
