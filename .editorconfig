@@ -2,3 +2,6 @@
 
 # IDE0060: 未使用のパラメーターを削除します
 dotnet_code_quality_unused_parameters = non_public:suggestion
+
+# IDE0063: 単純な 'using' ステートメントを使用する
+csharp_prefer_simple_using_statement = true:silent
