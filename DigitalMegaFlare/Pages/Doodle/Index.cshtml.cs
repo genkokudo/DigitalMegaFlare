@@ -193,6 +193,8 @@ namespace DigitalMegaFlare.Pages.Doodle
         #region MakeChildData:子データ作成
         /// <summary>
         /// 子データを先に作っておきます
+        /// 現在の所、どの親にどの子がぶら下がるかだけ。
+        /// キー情報などは載せてない。
         /// </summary>
         /// <param name="excel"></param>
         /// <param name="errors"></param>
@@ -230,7 +232,12 @@ namespace DigitalMegaFlare.Pages.Doodle
                                     }
                                     if (!childList[splited[0]].Contains(splited[1]))
                                     {
-                                        childList[splited[0]].Add(splited[1]);
+                                        if (!childList[splited[0]].Contains(sheetName))
+                                        {
+                                            // 重複して同じ名前が入らないように。（キーも格納する場合は別だが。）
+                                            childList[splited[0]].Add(sheetName);
+                                        }
+                                        //childList[splited[0]].Add(splited[1]);  // おかしくない？0とか1が入る。格納するのはシート名だけでいいの？キーは？
                                     }
                                 }
                             }
@@ -284,22 +291,18 @@ namespace DigitalMegaFlare.Pages.Doodle
             // 子情報取得
             var childList = MakeChildData(excel, errors);
 
-            // データ作成
+            // 子シートデータ
+            var children = new Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>>();
+
+            // 子シートから順番にデータ作成
             foreach (var sheetName in sequence)
             {
                 // 1つのシート
                 var sheet = excel[sheetName];
-
-                // 子シートデータ
-                var children = new Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>>();
                 
                 if (sheetName == "Parse")
                 {
                     // 組み立て情報の予定
-                }
-                else if (sheetName == "Outputs")
-                {
-                    // 吐き出し情報の予定
                 }
                 else if (sheetName.EndsWith("List"))
                 {
@@ -341,7 +344,15 @@ namespace DigitalMegaFlare.Pages.Doodle
                                         var childNames = childList[sheetName];
                                         foreach (var childName in childNames)
                                         {
-                                            rowData.Add(childName, children[sheetName][key][childName]);    // ModelListがないって言われる
+                                            if (children.ContainsKey(sheetName) && children[sheetName].ContainsKey(key) && children[sheetName][key].ContainsKey(childName))
+                                            {
+                                                rowData.Add(childName, children[sheetName][key][childName]);
+                                            }
+                                            else
+                                            {
+                                                // 子情報があるのにキーに対する子データはなかった場合は、空データを作っておくべき。
+                                                rowData.Add(childName, new List<string>());
+                                            }
                                         }
                                     }
                                 }
