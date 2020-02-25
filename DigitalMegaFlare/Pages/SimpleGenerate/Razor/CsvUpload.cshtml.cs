@@ -35,7 +35,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
             // アップロードされたファイルをサーバに保存する
             using (var fileStream = file.OpenReadStream())
             {
-                var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files");
+                var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory);
 
                 using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
                 {

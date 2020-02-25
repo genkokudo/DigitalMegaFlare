@@ -11,6 +11,7 @@
     public class DefaultParameters
     {
         public object[][] DefaultValues { get; set; }
+        public string FileDirectory { get; set; }
         //public bool IsDemoMode { get; set; }
         //public DefaultUser DefaultUser { get; set; }
 

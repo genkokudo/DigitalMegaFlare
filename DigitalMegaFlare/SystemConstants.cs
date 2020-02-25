@@ -10,6 +10,8 @@ namespace DigitalMegaFlare
     /// </summary>
     public class SystemConstants
     {
+        public const string FileDirectory = "files";
+
         // TODO:使ってない定数沢山
 
         // 環境

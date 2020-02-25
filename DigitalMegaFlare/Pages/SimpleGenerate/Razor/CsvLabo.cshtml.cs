@@ -84,7 +84,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         {
 
             // ファイルアクセス処理
-            var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files");
+            var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory);
 
             // ファイルの読み込み
             var csv = ReadCsv(fileDirectry);

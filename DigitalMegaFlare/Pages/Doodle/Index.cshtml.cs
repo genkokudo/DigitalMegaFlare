@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
+using DigitalMegaFlare.Infrastructure;
 using DigitalMegaFlare.Data;
 using DigitalMegaFlare.Models;
 using DigitalMegaFlare.Pages.SimpleGenerate.Razor;
@@ -33,8 +34,6 @@ namespace DigitalMegaFlare.Pages.Doodle
             _hostEnvironment = hostEnvironment;
         }
 
-        public string Test { get; set; }
-
         public IActionResult OnGet()
         {
             return Page();
@@ -50,7 +49,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             // テンプレート読み込み
             // ファイルアクセス処理
-            var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files", "razors", "asp");
+            var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors", "asp");
 
             using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
             {
@@ -64,7 +63,7 @@ namespace DigitalMegaFlare.Pages.Doodle
                     var template = System.IO.File.ReadAllText(fileInfo.PhysicalPath);
 
                     // Excelから読み込み
-                    var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, "files", "excels");
+                    var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "excels");
                     var excel = ReadExcel(excelDirectry, "Model.xlsx");
 
                     // Modelの作成
@@ -406,13 +405,15 @@ namespace DigitalMegaFlare.Pages.Doodle
             return model;
         }
 
+        #region ReadExcel:Excelファイルを読み込む
         /// <summary>
-        /// Excelを読み込む
+        /// Excelファイルを読み込む
+        /// xlsxのみ対応
         /// </summary>
         /// <param name="directry">ディレクトリ</param>
         /// <param name="filename">拡張子付きのファイル名</param>
-        /// <returns></returns>
-        private Dictionary<string, List<List<string>>> ReadExcel(string directry, string filename = "Model.xlsx")
+        /// <returns>シート名をキーとした辞書、行と列の2次元string</returns>
+        private Dictionary<string, List<List<string>>> ReadExcel(string directry, string filename)
         {
             // ファイルの読み込み
             var xlsx = new Dictionary<string, List<List<string>>>();
@@ -450,7 +451,10 @@ namespace DigitalMegaFlare.Pages.Doodle
                 return xlsx;
             }
         }
+        #endregion
 
+        // TODO:Extensionにしたのでそちらに移行する
+        #region InputDynamic:動的にdynamic型を生成する
         /// <summary>
         /// 動的にdynamic型を生成する
         /// </summary>
@@ -464,6 +468,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             return result;
         }
-    }
+        #endregion
 
+    }
 }
