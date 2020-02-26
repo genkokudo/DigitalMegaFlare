@@ -69,6 +69,12 @@ namespace DigitalMegaFlare.Pages.Doodle
                     // Modelの作成
                     var model = CreateModel(excel);
 
+                    // TODO:ModelListの件数だけファイル生成（スクリプト内では添え字が認識できずModelが全てなので、取り出して匿名型で渡すことになる？）
+                    // TODO:生成したファイルを一時保存
+                    // TODO:一時保存したファイルをZipにする
+                    // https://ajya.hatenablog.jp/entry/2015/08/21/060000
+                    // TODO:ダウンロード
+
                     // 生成
                     string result = await engine.CompileRenderStringAsync("templateKey", template, model);
 
@@ -84,11 +90,13 @@ namespace DigitalMegaFlare.Pages.Doodle
 
         }
 
+        #region MakeSequence:生成するシートの順番を作成する（子シート優先にする）
         /// <summary>
         /// 生成するシートの順番を作成する
+        /// 子シート優先にする
         /// </summary>
-        /// <param name="excel"></param>
-        /// <param name="errors"></param>
+        /// <param name="excel">Excelデータ</param>
+        /// <param name="errors">エラーを格納するところ</param>
         /// <returns>シートの順番が書かれたList</returns>
         private List<string> MakeSequence(Dictionary<string, List<List<string>>> excel, List<string> errors)
         {
@@ -96,6 +104,7 @@ namespace DigitalMegaFlare.Pages.Doodle
             var parentList = MakeParentList(excel, errors);
 
             // 名前リスト作成の為の意味のないリスト
+            // （本来は木構造に持たせるデータを入れることができるが、今回は順番が欲しいだけなので名前だけ持たせる）
             var nameList = new Dictionary<string, string>();
             foreach (var item in excel)
             {
@@ -120,12 +129,14 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             return result;
         }
+        #endregion
 
+        #region GetIndex:シート内の指定した列の番号を取得する
         /// <summary>
         /// シート内の指定した列の番号を取得する
         /// </summary>
         /// <param name="sheet"></param>
-        /// <returns></returns>
+        /// <returns>なかったら-1</returns>
         private int GetIndex(List<List<string>> sheet, string name)
         {
             var result = -1;
@@ -143,8 +154,17 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             return result;
         }
+        #endregion
 
         #region MakeParentList:親リスト作成
+        /// <summary>
+        /// Excelから親リストを作成する
+        /// ある子要素は、親無しまたは1種類の親を持つ前提のデータ構造である
+        /// 親要素はシート内のParent列で判断する
+        /// </summary>
+        /// <param name="excel"></param>
+        /// <param name="errors"></param>
+        /// <returns>各要素の親がどの要素かを挙げたリスト</returns>
         private Dictionary<string, string> MakeParentList(Dictionary<string, List<List<string>>> excel, List<string> errors)
         {
             var parentList = new Dictionary<string, string>();
@@ -237,7 +257,7 @@ namespace DigitalMegaFlare.Pages.Doodle
                                             // 重複して同じ名前が入らないように。（キーも格納する場合は別だが。）
                                             childList[splited[0]].Add(sheetName);
                                         }
-                                        //childList[splited[0]].Add(splited[1]);  // おかしくない？0とか1が入る。格納するのはシート名だけでいいの？キーは？
+                                        //childList[splited[0]].Add(splited[1]);  // 今回はキーまで載せない。
                                     }
                                 }
                             }
@@ -249,8 +269,10 @@ namespace DigitalMegaFlare.Pages.Doodle
         }
         #endregion
 
+        #region 子シートのdynamicデータ格納・保持
         /// <summary>
-        /// 子データを追加
+        /// 子シートのデータを親のキー別にdynamic化したものを格納して保持、親dynamic生成時にここから取得する。
+        /// Listではない。既にdynamicでまとまったデータを格納している。1つの親キーに1件のみ。
         /// </summary>
         /// <param name="children">子データを格納する配列</param>
         /// <param name="parentName">親の名前</param>
@@ -271,8 +293,8 @@ namespace DigitalMegaFlare.Pages.Doodle
                 children[parentName][parentKey].Add(childSheetName, new Dictionary<string, dynamic>());
             }
             children[parentName][parentKey][childSheetName] = data;
-
         }
+        #endregion
 
         /// <summary>
         /// Razorに入力するModelを作成する
@@ -285,109 +307,100 @@ namespace DigitalMegaFlare.Pages.Doodle
             // データ作成順を決める
             var sequence = MakeSequence(excel, errors);
 
-            // 各シートのデータ：キーはシート名
-            var dataList = new Dictionary<string, dynamic>();
+            // 親を持たない各シートのデータ：キーはシート名
+            var topDataList = new Dictionary<string, dynamic>();
 
             // 子情報取得
             var childList = MakeChildData(excel, errors);
 
             // 子シートデータ
-            var children = new Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>>();
+            var childDynamic = new Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>>();
 
             // 子シートから順番にデータ作成
             foreach (var sheetName in sequence)
             {
                 // 1つのシート
                 var sheet = excel[sheetName];
-                
-                if (sheetName == "Parse")
+
+                // 親があるか
+                var parentIndex = GetIndex(sheet, "Parent");
+
+                // 親シート名
+                var parentName = string.Empty;
+
+                // キー取得
+                var keyIndex = GetIndex(sheet, "Key");
+
+                if (sheetName == "Document")
                 {
-                    // 組み立て情報の予定
+                    // なにもなし
                 }
                 else if (sheetName.EndsWith("List"))
                 {
                     // リスト
                     if (sheet.Count > 2)
                     {
-                        // 親があるか
-                        var parentIndex = GetIndex(sheet, "Parent");
-
-                        // キー取得
-                        var keyIndex = GetIndex(sheet, "Key");
-
-                        // 親別、親が無い場合はシート全体のデータ（親キー、1行データ）
+                        // 親Key別データ、親が無い場合はシート全体のデータ（親キー、1行データ）
                         var dataByParent = new Dictionary<string, List<dynamic>>();
 
                         // 2行目まで読まない
-                        var parentName = "";
                         for (int row = 2; row < sheet.Count; row++)
                         {
                             // 1行読む
-                            var parentKey = "-1";
+                            var parentKey = "-1";   // 対象の親のKey
                             var rowData = new Dictionary<string, object>();
                             for (int col = 0; col < sheet[row].Count; col++)
                             {
                                 if(col == parentIndex)
                                 {
-                                    // 親参照はスクリプトデータから除外
+                                    // 親参照はdynamicデータに登録しないが、子dynamicデータリストに保持させるための情報を取得する
                                     var split = sheet[row][col].Split(".");
                                     parentName = split[0];
                                     parentKey = split[1];
                                 }
                                 else if (col == keyIndex)
                                 {
-                                    var key = sheet[row][col];
-
                                     // 子を追加
-                                    if (childList.ContainsKey(sheetName))
-                                    {
-                                        var childNames = childList[sheetName];
-                                        foreach (var childName in childNames)
-                                        {
-                                            if (children.ContainsKey(sheetName) && children[sheetName].ContainsKey(key) && children[sheetName][key].ContainsKey(childName))
-                                            {
-                                                rowData.Add(childName, children[sheetName][key][childName]);
-                                            }
-                                            else
-                                            {
-                                                // 子情報があるのにキーに対する子データはなかった場合は、空データを作っておくべき。
-                                                rowData.Add(childName, new List<string>());
-                                            }
-                                        }
-                                    }
+                                    var key = sheet[row][col];  // 書かれているKeyを取得
+                                    AddChildDynamic(childList, childDynamic, sheetName, key, rowData);
                                 }
                                 else
                                 {
+                                    // ParentでもKeyでもない通常の列
                                     rowData.Add(sheet[0][col], sheet[row][col]);
                                 }
                             }
 
-
-                            // 親Key別に追加
+                            // 行データをdynamic化し、親Key別のリストに追加する。
+                            // 親がないシートは必ず1件の同じリストに入る
                             if (!dataByParent.ContainsKey(parentKey))
                             {
                                 dataByParent.Add(parentKey, new List<dynamic>());
                             }
-                            dataByParent[parentKey].Add(InputDynamic(rowData));  // dataByParentは、親キーの種類だけ件数入ってるよ
+                            dataByParent[parentKey].Add(InputDynamic(rowData));
                         }
 
+                        // 親Key別のリストをどこかに登録する。
+                        // 親がないシートは必ず1件
                         foreach (var dataByParentKey in dataByParent.Keys)
                         {
                             if (parentIndex >= 0)
                             {
                                 // 親がある場合は、データを溜めておく
-                                AddChildrenData(children, parentName, dataByParentKey, sheetName, dataByParent[dataByParentKey]);
+                                AddChildrenData(childDynamic, parentName, dataByParentKey, sheetName, dataByParent[dataByParentKey]);
                             }
                             else
                             {
                                 // 親が無いシートはトップにデータを入れる
-                                dataList.Add(sheetName, dataByParent[dataByParentKey]);
+                                topDataList.Add(sheetName, dataByParent[dataByParentKey]);
                             }
                         }
                     }
                 }
                 else
                 {
+                    // 今回、通常シートは親子関係を持たない。持たせたい場合はListシートと同様にすればできるはず。
+                    // …というか、リストの下位互換かも。通常シート不要説。
                     // 通常シート：1列目が名前、2列目が値
                     if (sheet.Count > 2)
                     {
@@ -399,11 +412,12 @@ namespace DigitalMegaFlare.Pages.Doodle
                             var value = sheet[row][1];
                             data.Add(name, value);
                         }
-                        // TODO:子を追加
-                        dataList.Add(sheetName, InputDynamic(data));
+                        // 親がないのでトップデータリストに追加
+                        topDataList.Add(sheetName, InputDynamic(data));
                     }
                 }
             }
+            var result = InputDynamic(topDataList);
 
             // TODO:組み立て
             dynamic project = InputDynamic(new Dictionary<string, object>() { { "Name", "DigitalMegaFlare" } });
@@ -416,9 +430,41 @@ namespace DigitalMegaFlare.Pages.Doodle
             return model;
         }
 
+        #region AddChildDynamic:行データに子データを追加
+        /// <summary>
+        /// 行データに子データを追加
+        /// </summary>
+        /// <param name="childList">子情報</param>
+        /// <param name="children">子シートデータ</param>
+        /// <param name="sheetName">親シート名</param>
+        /// <param name="key">親キー</param>
+        /// <param name="rowData">追加対象行データ</param>
+        private static void AddChildDynamic(Dictionary<string, List<string>> childList, Dictionary<string, Dictionary<string, Dictionary<string, dynamic>>> children, string sheetName, string key, Dictionary<string, object> rowData)
+        {
+            // 子を追加
+            // Key列があるListシートの場合、子dynamicデータを探して保持する。
+            if (childList.ContainsKey(sheetName))
+            {
+                var childNames = childList[sheetName];
+                foreach (var childName in childNames)
+                {
+                    if (children.ContainsKey(sheetName) && children[sheetName].ContainsKey(key) && children[sheetName][key].ContainsKey(childName))
+                    {
+                        rowData.Add(childName, children[sheetName][key][childName]);
+                    }
+                    else
+                    {
+                        // 子情報があるのにキーに対する子データはなかった場合は、空データを作っておくべき。
+                        rowData.Add(childName, new List<string>());
+                    }
+                }
+            }
+        }
+        #endregion
+
         #region ReadExcel:Excelファイルを読み込む
         /// <summary>
-        /// Excelファイルを読み込む
+        /// Excelファイルを読み込み、シート名をキーとした辞書にする
         /// xlsxのみ対応
         /// </summary>
         /// <param name="directry">ディレクトリ</param>

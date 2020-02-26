@@ -41,6 +41,7 @@
     <Folder Include="Data\Migrations\" />
     <Folder Include="wwwroot\files\excels\" />
     <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\temp\" />
   </ItemGroup>
 
 
