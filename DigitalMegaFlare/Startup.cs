@@ -51,6 +51,13 @@ namespace DigitalMegaFlare
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // RazorEngineに日本語がエスケープされないようにする
+            services.AddSingleton(HtmlEncoder.Create(UnicodeRanges.BasicLatin,
+                                             UnicodeRanges.CjkSymbolsandPunctuation,
+                                             UnicodeRanges.Hiragana,
+                                             UnicodeRanges.Katakana,
+                                             UnicodeRanges.CjkUnifiedIdeographs));
+
             if (Environment.EnvironmentName == SystemConstants.EnvDevelopment)
             {
                 // 開発系はappsettingsから接続文字列とパスワードを取得する。

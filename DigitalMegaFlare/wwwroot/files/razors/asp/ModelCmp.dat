@@ -1,23 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-@* 会社用 *@
+@{
+	var Index = int.Parse(Model.Project.Index); 
+	var Mod = Model.ModelList[Index];
+}
+
 namespace @(Model.Project.Name).Entities
 {
 	/// <summary>
-	/// @(Model.ModelList.Comment)です。
+	/// @(Mod.Comment)です。
 	/// </summary>
-	public class @(Model.ModelList.Name)Entity
+	public class @(Mod.Name)Entity
 	{
 		/// <summary>
 		/// IDを取得、もしくは、設定します。
 		/// </summary>
 		[Key]
-		public long @(Model.ModelList.Name)Id { get; set; }
-		@foreach(var item in Model.ModelList.FieldList){
+		public long @(Mod.Name)Id { get; set; }
+		@foreach(var item in Mod.FieldList){
 		@* フィールドのリスト *@
 		var attribute = string.Empty;
 		if(!string.IsNullOrWhiteSpace(item.Attribute)){
-			attribute = $"\n\t\t{item.Attribute}";
+			attribute = $"\r\n\t\t{item.Attribute}";
 		}
 		@:
 		@:/// <summary>
@@ -25,19 +29,20 @@ namespace @(Model.Project.Name).Entities
 		@:/// </summary>@(attribute)
 		@:public @(item.Type) @(item.Name) { get; set; }
 		}
-		@if(Model.ModelList.IsMaster){
+
+		@if(bool.Parse(Mod.IsMaster)){
 		@:/// <summary>
 		@:/// 初期値を作成します。
 		@:/// </summary>
-		@:public static @(Model.ModelList.Name) InitialData
+		@:public static @(Mod.Name) InitialData
 		@:{
 		@:	get
 		@:	{
 		@:		var names = new[] { "1", "2", "3", "4", "5" };
-		@:		var result = new List<@(Model.ModelList.Name)Entity>();
+		@:		var result = new List<@(Mod.Name)Entity>();
 		@:		foreach (var name in names)
 		@:		{
-		@:			result.Add(new @(Model.ModelList.Name)Entity() { Name = name });
+		@:			result.Add(new @(Mod.Name)Entity() { Name = name });
 		@:		}
 		@:		return result.ToArray();
 		@:	}

@@ -54,7 +54,7 @@ namespace DigitalMegaFlare.Pages.Doodle
             using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
             {
                 // ファイル情報を取得
-                IFileInfo fileInfo = provider.GetFileInfo("Model.dat");
+                IFileInfo fileInfo = provider.GetFileInfo("ModelCmp.dat");
 
                 // ファイル存在チェック
                 if (fileInfo.Exists)
@@ -71,13 +71,20 @@ namespace DigitalMegaFlare.Pages.Doodle
 
 
                     // 生成
-                    string result = await engine.CompileRenderStringAsync("templateKey", template, model);
+                    string result = "";
+                    // TODO:↓この"ModelList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は固定にする。
+                    for (int i = 0; i < model.ModelList.Count; i++)
+                    {
+                        // 変数入れれるかな？
+                        model.Project.Index = i.ToString();
 
-                    // TODO:ModelListの件数だけファイル生成（スクリプト内では添え字が認識できずModelが全てなので、取り出して匿名型で渡すことになる？）
-                    // ↑さすがにそれはあんまりだ。model.ModelList[0] とかでアクセスできるので、Razorスクリプトを少し変えて、添え字だけ送れば何とかなるはず。model.ModelList[model.Index]
+                        // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
+                        result = await engine.CompileRenderStringAsync($"{model.ModelList[i].Name}", template, model);
+                        
+                        // 生成したファイルを一時保存（今回はやっつけで。）
+                        System.IO.File.WriteAllText(Path.Combine(_hostEnvironment.WebRootPath, "temp", $"{model.ModelList[i].Name}Entity.cs"), result, System.Text.Encoding.UTF8);
+                    }
 
-                    // TODO:生成したファイルを一時保存（今回はやっつけで。）
-                    System.IO.File.WriteAllText(Path.Combine(_hostEnvironment.WebRootPath, "temp", "temp.cs"), result, System.Text.Encoding.UTF8);
 
                     // TODO:一時保存したファイルをZipにする
                     // https://ajya.hatenablog.jp/entry/2015/08/21/060000
@@ -306,6 +313,7 @@ namespace DigitalMegaFlare.Pages.Doodle
         }
         #endregion
 
+        #region CreateModel:Razorに入力するModelを作成する
         /// <summary>
         /// Razorに入力するModelを作成する
         /// </summary>
@@ -409,7 +417,7 @@ namespace DigitalMegaFlare.Pages.Doodle
                 }
                 else
                 {
-                    // 今回、通常シートは親子関係を持たない。持たせたい場合はListシートと同様にすればできるはず。
+                    // 今回、通常シートは親子関係を持たない。持たせたい場合はListシートと同様に実装すればできるはず。
                     // …というか、リストの下位互換かも。通常シート不要説。
                     // 通常シート：1列目が名前、2列目が値
                     if (sheet.Count > 2)
@@ -429,16 +437,9 @@ namespace DigitalMegaFlare.Pages.Doodle
             }
             var result = InputDynamic(topDataList);
 
-            // TODO:組み立て
-            dynamic project = InputDynamic(new Dictionary<string, object>() { { "Name", "DigitalMegaFlare" } });
-            dynamic fieldListRow0 = InputDynamic(new Dictionary<string, object>() { { "Name", "Name" }, { "Comment", "名前" }, { "Attribute", "[StringLength(100)]" }, { "Type", "string" } });
-            dynamic fieldListRow1 = InputDynamic(new Dictionary<string, object>() { { "Name", "Score" }, { "Comment", "点数" }, { "Attribute", "" }, { "Type", "int" } });
-            dynamic fieldList = new List<dynamic> { fieldListRow0, fieldListRow1 };
-            dynamic modelList = InputDynamic(new Dictionary<string, object>() { { "Name", "Test" }, { "Comment", "テストモデル" }, { "IsMaster", false }, { "FieldList", fieldList } });
-            dynamic model = InputDynamic(new Dictionary<string, object>() { { "Project", project }, { "ModelList", modelList } });
-
-            return model;
+            return result;
         }
+        #endregion
 
         #region AddChildDynamic:行データに子データを追加
         /// <summary>
@@ -499,7 +500,7 @@ namespace DigitalMegaFlare.Pages.Doodle
                         {
                             // ワークシート
                             List<List<string>> sheet = new List<List<string>>();
-
+                            // TODO:何も書いてないシートがあると落ちる
                             for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
                             {
                                 List<string> raw = new List<string>();
