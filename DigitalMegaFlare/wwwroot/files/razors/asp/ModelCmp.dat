@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-
-namespace @(Model.Project.Name).Models
+@* 会社用 *@
+namespace @(Model.Project.Name).Entities
 {
 	/// <summary>
-	/// @(Model.ModelList.Comment)
+	/// @(Model.ModelList.Comment)です。
 	/// </summary>
-	public class @(Model.ModelList.Name)
+	public class @(Model.ModelList.Name)Entity
 	{
 		/// <summary>
-		/// 通し番号
+		/// IDを取得、もしくは、設定します。
 		/// </summary>
 		[Key]
-		public long Id { get; set; }
+		public long @(Model.ModelList.Name)Id { get; set; }
 		@foreach(var item in Model.ModelList.FieldList){
 		@* フィールドのリスト *@
 		var attribute = string.Empty;
@@ -34,10 +34,10 @@ namespace @(Model.Project.Name).Models
 		@:	get
 		@:	{
 		@:		var names = new[] { "1", "2", "3", "4", "5" };
-		@:		var result = new List<@(Model.ModelList.Name)>();
+		@:		var result = new List<@(Model.ModelList.Name)Entity>();
 		@:		foreach (var name in names)
 		@:		{
-		@:			result.Add(new @(Model.ModelList.Name)() { Name = name });
+		@:			result.Add(new @(Model.ModelList.Name)Entity() { Name = name });
 		@:		}
 		@:		return result.ToArray();
 		@:	}
@@ -45,35 +45,3 @@ namespace @(Model.Project.Name).Models
 		}
 	}
 }
-
-
-@*
-★固定ゲッターのInitialDataについて
-・IsMasterの場合のみ作成
-・値リストから全て生成可能、要Pascal→Camel変換
-・複数形の生成は無理なので、入力させる。
-
-★これ覚えておこう。
-@functions {
-    public string GetHello()
-    {
-        return "Hello";
-    }
-    
-    // プロパティの定義
-    int _num = 0;
-    int Num
-    {
-        get
-        {
-            return _num;
-        }
-        set
-        {
-            _num = value;
-        }
-    }
-}
-
-<div>From method: @GetHello()</div> 
-*@

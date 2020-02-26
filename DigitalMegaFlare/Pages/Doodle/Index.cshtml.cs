@@ -64,19 +64,28 @@ namespace DigitalMegaFlare.Pages.Doodle
 
                     // Excelから読み込み
                     var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "excels");
-                    var excel = ReadExcel(excelDirectry, "Model.xlsx");
+                    var excel = ReadExcel(excelDirectry, "Model.xlsx", true);
 
                     // Modelの作成
                     var model = CreateModel(excel);
 
-                    // TODO:ModelListの件数だけファイル生成（スクリプト内では添え字が認識できずModelが全てなので、取り出して匿名型で渡すことになる？）
-                    // TODO:生成したファイルを一時保存
-                    // TODO:一時保存したファイルをZipにする
-                    // https://ajya.hatenablog.jp/entry/2015/08/21/060000
-                    // TODO:ダウンロード
 
                     // 生成
                     string result = await engine.CompileRenderStringAsync("templateKey", template, model);
+
+                    // TODO:ModelListの件数だけファイル生成（スクリプト内では添え字が認識できずModelが全てなので、取り出して匿名型で渡すことになる？）
+                    // ↑さすがにそれはあんまりだ。model.ModelList[0] とかでアクセスできるので、Razorスクリプトを少し変えて、添え字だけ送れば何とかなるはず。model.ModelList[model.Index]
+
+                    // TODO:生成したファイルを一時保存（今回はやっつけで。）
+                    System.IO.File.WriteAllText(Path.Combine(_hostEnvironment.WebRootPath, "temp", "temp.cs"), result, System.Text.Encoding.UTF8);
+
+                    // TODO:一時保存したファイルをZipにする
+                    // https://ajya.hatenablog.jp/entry/2015/08/21/060000
+
+                    // TODO:ダウンロード
+                    //// wwwroot/temp/temp.zip を aaaa.zipとしてダウンロード（戻り値は普通にActionResultで良い）
+                    //var filePath = Path.Combine(_hostEnvironment.WebRootPath, "temp", "temp.zip");
+                    //return File(new FileStream(filePath, FileMode.Open), "application/zip", "aaaa.zip");
 
                     ViewData["Message"] = result;
                 }
@@ -89,6 +98,7 @@ namespace DigitalMegaFlare.Pages.Doodle
             return Page();
 
         }
+
 
         #region MakeSequence:生成するシートの順番を作成する（子シート優先にする）
         /// <summary>
@@ -469,8 +479,9 @@ namespace DigitalMegaFlare.Pages.Doodle
         /// </summary>
         /// <param name="directry">ディレクトリ</param>
         /// <param name="filename">拡張子付きのファイル名</param>
+        /// <param name="isRequiredTitle">1行目に何もない列を無視する</param>
         /// <returns>シート名をキーとした辞書、行と列の2次元string</returns>
-        private Dictionary<string, List<List<string>>> ReadExcel(string directry, string filename)
+        private Dictionary<string, List<List<string>>> ReadExcel(string directry, string filename, bool isRequiredTitle = false)
         {
             // ファイルの読み込み
             var xlsx = new Dictionary<string, List<List<string>>>();
@@ -494,7 +505,11 @@ namespace DigitalMegaFlare.Pages.Doodle
                                 List<string> raw = new List<string>();
                                 for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
                                 {
-                                    raw.Add(ws.Cell(i, j).Value.ToString());
+                                    // 1行目に何もない列を無視する
+                                    if (!isRequiredTitle || !string.IsNullOrWhiteSpace(ws.Cell(1, j).Value.ToString()))
+                                    {
+                                        raw.Add(ws.Cell(i, j).Value.ToString());
+                                    }
                                 }
                                 sheet.Add(raw);
                             }
