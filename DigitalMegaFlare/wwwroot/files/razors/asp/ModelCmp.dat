@@ -29,12 +29,12 @@ namespace @(Model.Project.Name).Entities
 		@:/// </summary>@(attribute)
 		@:public @(item.Type) @(item.Name) { get; set; }
 		}
-
 		@if(bool.Parse(Mod.IsMaster)){
+		@:
 		@:/// <summary>
 		@:/// 初期値を作成します。
 		@:/// </summary>
-		@:public static @(Mod.Name) InitialData
+		@:public static @(Mod.Name)Entity[] InitialData
 		@:{
 		@:	get
 		@:	{
@@ -49,3 +49,28 @@ namespace @(Model.Project.Name).Entities
 		@:}
 }	}
 }
+
+@*
+		public static RiskCategoryEntity[] InitialData
+		{
+			get
+			{
+				var riskCategories = new[] { 1, 2, 3, 4 };
+				var backgroundColors = new[] { "#FF0000", "#FFC000", "#FFFF00", "#92d050", };
+				var matrixFontColors = new[] { "#FFFFFF", "#FFFFFF", "#000000", "#FFFFFF", };
+				var tableFontColors = new[] { "#FFFFFF", "#000000", "#000000", "#000000", };
+				var result = new List<RiskCategoryEntity>();
+				for (int i = 0; i < riskCategories.Length; i++)
+				{
+					result.Add(new RiskCategoryEntity()
+					{
+						RiskCategory = riskCategories[i],
+						BackgroundColor = backgroundColors[i],
+						MatrixFontColor = matrixFontColors[i],
+						TableFontColor = tableFontColors[i]
+					});
+				}
+				return result.ToArray();
+			}
+		}
+*@

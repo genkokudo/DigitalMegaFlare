@@ -58,7 +58,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             string dateFormat = "yyyyMMddHHmmss";
             string outFilePath = Path.Combine(outPath, $"{DateTime.UtcNow.ToString(dateFormat)}.zip");
-            string excelName = "Model.xlsx";
+            string excelName = "cmmp.xlsx";
 
             // 一時ファイル消す
             DirectoryInfo target = new DirectoryInfo(outPath);
@@ -135,6 +135,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
         }
 
+        // TODO:↓こいつらみんなライブラリ行き
 
         /// <summary>
         /// 指定したパスにディレクトリが存在しない場合
