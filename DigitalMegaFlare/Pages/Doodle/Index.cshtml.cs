@@ -58,7 +58,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
             string dateFormat = "yyyyMMddHHmmss";
             string outFilePath = Path.Combine(outPath, $"{DateTime.UtcNow.ToString(dateFormat)}.zip");
-            string excelName = "cmmp.xlsx";
+            string excelName = "Model.xlsx";
 
             // 一時ファイル消す
             DirectoryInfo target = new DirectoryInfo(outPath);
@@ -137,17 +137,18 @@ namespace DigitalMegaFlare.Pages.Doodle
 
         // TODO:↓こいつらみんなライブラリ行き
 
+        #region MyRegion
         /// <summary>
         /// 指定したパスにディレクトリが存在しない場合
         /// すべてのディレクトリとサブディレクトリを作成します
         /// </summary>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private static DirectoryInfo SafeCreateDirectory(string directory)
+        private DirectoryInfo SafeCreateDirectory(string directory)
         {
             if (!directory.EndsWith("\\") && !directory.EndsWith("/"))
             {
-                directory = directory + "/";
+                directory += "/";
             }
             if (Directory.Exists(directory))
             {
@@ -155,6 +156,7 @@ namespace DigitalMegaFlare.Pages.Doodle
             }
             return Directory.CreateDirectory(directory);
         }
+        #endregion
 
         #region MakeSequence:生成するシートの順番を作成する（子シート優先にする）
         /// <summary>
