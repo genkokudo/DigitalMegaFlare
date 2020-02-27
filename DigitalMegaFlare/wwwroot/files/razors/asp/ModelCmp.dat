@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 @{
 	var Index = int.Parse(Model.Project.Index); 
-	var Mod = Model.ModelList[Index];
+	var Mod = Model.RootList[Index];
 }
 
 namespace @(Model.Project.Name).Entities
@@ -25,7 +25,7 @@ namespace @(Model.Project.Name).Entities
 		}
 		@:
 		@:/// <summary>
-		@:/// @(item.Comment)
+		@:/// @(item.Comment)を取得、もしくは、設定します。
 		@:/// </summary>@(attribute)
 		@:public @(item.Type) @(item.Name) { get; set; }
 		}
@@ -47,6 +47,5 @@ namespace @(Model.Project.Name).Entities
 		@:		return result.ToArray();
 		@:	}
 		@:}
-		}
-	}
+}	}
 }

@@ -17,7 +17,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using Mintea.HtmlToDom;
 using RazorLight;
+using System.IO.Compression;
 // TODO:Dictionaryを拡張して、存在したら追加、キーが存在しなかったらnew Listするメソッドと、new Dictionaryする拡張メソッドを作る。作れる？
+// "Doc"で始まるシートは読まない
+// "List"で終わるシートは読む
+// "RootList"の件数だけ生成する
+// TODO:"Project.Index"が必須、ということはProjectシート必須。->Settingsに変更する。
+// TODO:"Is"で始まるフィールドは、0,FALSE,False,-で始まる,空文字列はfalse、1,TRUE,Trueはtrue
+// TODO:各出力ファイル名を指定できるようにすること。将来的には複数種類出力のため各行出力したいが、今はProjectにRazorテンプレで書く。
 namespace DigitalMegaFlare.Pages.Doodle
 {
     /// <summary>
@@ -46,6 +53,19 @@ namespace DigitalMegaFlare.Pages.Doodle
                           .UseMemoryCachingProvider()
                           .DisableEncoding()
                           .Build();
+            string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
+            SafeCreateDirectory(outPath);
+
+            string dateFormat = "yyyyMMddHHmmss";
+            string outFilePath = Path.Combine(outPath, $"{DateTime.UtcNow.ToString(dateFormat)}.zip");
+            string excelName = "Model.xlsx";
+
+            // 一時ファイル消す
+            DirectoryInfo target = new DirectoryInfo(outPath);
+            foreach (FileInfo file in target.GetFiles())
+            {
+                file.Delete();
+            }
 
             // テンプレート読み込み
             // ファイルアクセス処理
@@ -64,7 +84,7 @@ namespace DigitalMegaFlare.Pages.Doodle
 
                     // Excelから読み込み
                     var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "excels");
-                    var excel = ReadExcel(excelDirectry, "Model.xlsx", true);
+                    var excel = ReadExcel(excelDirectry, excelName, true);
 
                     // Modelの作成
                     var model = CreateModel(excel);
@@ -72,27 +92,36 @@ namespace DigitalMegaFlare.Pages.Doodle
 
                     // 生成
                     string result = "";
-                    // TODO:↓この"ModelList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は固定にする。
-                    for (int i = 0; i < model.ModelList.Count; i++)
+                    var outFileList = new List<string>();
+                    // ↓この"RootList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は"RootList"固定にする。
+                    for (int i = 0; i < model.RootList.Count; i++)
                     {
                         // 変数入れれるかな？
                         model.Project.Index = i.ToString();
 
                         // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
-                        result = await engine.CompileRenderStringAsync($"{model.ModelList[i].Name}", template, model);
-                        
-                        // 生成したファイルを一時保存（今回はやっつけで。）
-                        System.IO.File.WriteAllText(Path.Combine(_hostEnvironment.WebRootPath, "temp", $"{model.ModelList[i].Name}Entity.cs"), result, System.Text.Encoding.UTF8);
+                        result = await engine.CompileRenderStringAsync($"{model.RootList[i].Name}", template, model);
+
+                        // 生成したファイルを一時保存（今回はやっつけで。本当は人によって一時フォルダ名変えるべき。）
+                        // VisualStudioが勘違いを起こすのでファイル末尾に"_"をつける
+                        var outFileName = $"{model.RootList[i].Name}Entity.cs_";
+                        outFileList.Add(outFileName);
+                        System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), result, System.Text.Encoding.UTF8);
                     }
 
-
-                    // TODO:一時保存したファイルをZipにする
-                    // https://ajya.hatenablog.jp/entry/2015/08/21/060000
-
-                    // TODO:ダウンロード
-                    //// wwwroot/temp/temp.zip を aaaa.zipとしてダウンロード（戻り値は普通にActionResultで良い）
-                    //var filePath = Path.Combine(_hostEnvironment.WebRootPath, "temp", "temp.zip");
-                    //return File(new FileStream(filePath, FileMode.Open), "application/zip", "aaaa.zip");
+                    // 一時保存したファイルをZipにする
+                    using (ZipArchive archive = ZipFile.Open(outFilePath, ZipArchiveMode.Create))
+                    {
+                        foreach (var item in outFileList)
+                        {
+                            archive.CreateEntryFromFile(
+                                Path.Combine(outPath, $"{item}"),
+                                $"{item.TrimEnd('_')}",
+                                //$"{excelName}/item.TrimEnd('_')}", // ディレクトリ分けする場合はこう書く
+                                CompressionLevel.NoCompression
+                                );
+                        }
+                    }
 
                     ViewData["Message"] = result;
                 }
@@ -102,10 +131,29 @@ namespace DigitalMegaFlare.Pages.Doodle
                 }
             }
 
-            return Page();
+            return File(new FileStream(outFilePath, FileMode.Open), "application/zip", $"{excelName}.zip");
 
         }
 
+
+        /// <summary>
+        /// 指定したパスにディレクトリが存在しない場合
+        /// すべてのディレクトリとサブディレクトリを作成します
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
+        private static DirectoryInfo SafeCreateDirectory(string directory)
+        {
+            if (!directory.EndsWith("\\") && !directory.EndsWith("/"))
+            {
+                directory = directory + "/";
+            }
+            if (Directory.Exists(directory))
+            {
+                return null;
+            }
+            return Directory.CreateDirectory(directory);
+        }
 
         #region MakeSequence:生成するシートの順番を作成する（子シート優先にする）
         /// <summary>
@@ -349,9 +397,10 @@ namespace DigitalMegaFlare.Pages.Doodle
                 // キー取得
                 var keyIndex = GetIndex(sheet, "Key");
 
-                if (sheetName == "Document")
+                if (sheetName.StartsWith("Doc"))
                 {
                     // なにもなし
+                    continue;
                 }
                 else if (sheetName.EndsWith("List"))
                 {
