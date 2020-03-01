@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 @{
-	var Index = int.Parse(Model.Project.Index); 
+	var Index = int.Parse(Model.Settings.Index); 
 	var Mod = Model.RootList[Index];
 }
 
-namespace @(Model.Project.Name).Entities
+namespace @(Model.Settings.Name).Entities
 {
 	/// <summary>
 	/// @(Mod.Comment)です。
@@ -29,7 +29,7 @@ namespace @(Model.Project.Name).Entities
 		@:/// </summary>@(attribute)
 		@:public @(item.Type) @(item.Name) { get; set; }
 		}
-		@if(bool.Parse(Mod.IsMaster)){
+		@if(Mod.IsMaster){
 		@:
 		@:/// <summary>
 		@:/// 初期値を作成します。
