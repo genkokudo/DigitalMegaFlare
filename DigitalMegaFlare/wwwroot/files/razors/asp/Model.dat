@@ -5,10 +5,10 @@ using System.ComponentModel.DataAnnotations;
 	var Mod = Model.RootList[Index];
 }
 
-namespace @(Model.Settings.Name).Entities
+namespace @(Model.Settings.Name).Models
 {
 	/// <summary>
-	/// @(Mod.Comment)です。
+	/// @(Mod.Comment)
 	/// </summary>
 	public class @(Mod.Name)
 	{

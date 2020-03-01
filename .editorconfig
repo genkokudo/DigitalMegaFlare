@@ -5,3 +5,6 @@ dotnet_code_quality_unused_parameters = non_public:suggestion
 
 # IDE0063: 単純な 'using' ステートメントを使用する
 csharp_prefer_simple_using_statement = true:silent
+
+# IDE0037: 推定メンバーの名前を使用します
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
