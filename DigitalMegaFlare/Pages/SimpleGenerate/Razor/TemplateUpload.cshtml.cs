@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.FileProviders;
+using Mintea.HtmlToDom;
+using Mintea.Extensions;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
 {
@@ -23,6 +25,9 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     public class TemplateUploadModel : PageModel
     {
         private readonly IMediator _mediator;
+
+        [BindProperty]
+        public string FilePath { get; set; }
 
         public TemplateUploadModel(IMediator mediator)
         {
@@ -51,12 +56,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     /// <summary>検索結果</summary>
     public class TemplateUploadResult
     {
-        /// <summary>言語・ライブラリ一覧</summary> 
-        public List<string> Libraries { get; set; }
-        /// <summary>ディレクトリ一覧</summary>
-        public Dictionary<string, List<string>> Directories { get; set; }
-        /// <summary>ファイル一覧</summary>
-        public Dictionary<string, List<string>> Files { get; set; }
+        /// <summary>ディレクトリ・ファイル一覧</summary>
+        public Dictionary<string, List<SelectListItem>> Files { get; set; }
     }
 
     /// <summary> 
@@ -83,82 +84,26 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         public async Task<TemplateUploadResult> Handle(TemplateUploadQuery query, CancellationToken token)
         {
             // TODO:リストボックスのやり方忘れた
+            var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
 
-            // ファイル検索
-            var libraries = new List<SelectListItem>();
-            var directories = new Dictionary<string, List<SelectListItem>>();
+            var list = TreeNode<string>.GetDirectoryFileList(razorFileDirectry);
+
             var files = new Dictionary<string, List<SelectListItem>>();
-
-            // ↓これは駄目。ツリー構造のデータなのでツリークラスを使って処理。
-
-            //// 1階層目
-            //var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
-            //IEnumerable<string> subFolders = Directory.GetDirectories(razorFileDirectry, "*", SearchOption.AllDirectories);
-
-            //foreach (string subFolder in subFolders)
-            //{
-            //    libraries.Add(subFolder);
-            //}
-
-            //// 2階層目
-            //foreach (var library in libraries)
-            //{
-            //    var subDirectories = new List<string>();
-            //    var subDirectry = Path.Combine(razorFileDirectry, library);
-            //    IEnumerable<string> subsubFolders = Directory.GetDirectories(subDirectry, "*", SearchOption.AllDirectories);
-
-            //    foreach (string subsubFolder in subsubFolders)
-            //    {
-            //        subDirectories.Add(subsubFolder);
-            //    }
-            //    directories.Add(subDirectories);
-            //}
-
-            //// 3階層目
-            //foreach (var library in libraries)
-            //{
-            //    var subDirectories = new List<string>();
-            //    var subDirectry = Path.Combine(razorFileDirectry, library);
-            //    IEnumerable<string> subsubFolders = Directory.GetFiles(subDirectry, "*", SearchOption.AllDirectories);
-
-            //    foreach (string subsubFolder in subsubFolders)
-            //    {
-            //        subDirectories.Add(subsubFolder);
-            //    }
-            //    directories.Add(subDirectories);
-            //}
-
+            foreach (var file in list)
+            {
+                files.Add(file.Key, new List<SelectListItem>());
+                foreach (var select in file.Value)
+                {
+                    files[file.Key].Add(new SelectListItem(select.Key, select.Value));
+                }
+            }
 
             // 検索結果の格納
             var result = new TemplateUploadResult
             {
-                Libraries = libraries,
-                Directories = directories,
                 Files = files
             };
             return await Task.FromResult(result);
-        }
-
-        private List<SelectListItem> getSelectList(int category)    // それぞれのValueって何入れよう？→下位を特定するためのキー。アンダースコアで繋げばとりあえずOK
-        {
-            // リストボックス選択肢の作成
-            // 1階層目
-            var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
-            IEnumerable<string> subFolders = Directory.GetDirectories(razorFileDirectry, "*", SearchOption.AllDirectories);
-
-            foreach (string subFolder in subFolders)
-            {
-                libraries.Add(subFolder);
-            }
-
-            //var parameters = _context.SystemParameters.Where(p => p.CategoryId == category).OrderBy(p => p.OrderNo).ToList();
-            //var selectList = new List<SelectListItem>();
-            //foreach (var item in parameters)
-            //{
-            //    selectList.Add(new SelectListItem(item.Display, item.CurrentValue));
-            //}
-
-            return selectList;
         }
     }
 

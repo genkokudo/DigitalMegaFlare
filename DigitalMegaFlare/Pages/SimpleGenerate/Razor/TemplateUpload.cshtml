@@ -2,15 +2,69 @@
 @model DigitalMegaFlare.Pages.SimpleGenerate.Razor.TemplateUploadModel
 @{
     ViewData["Title"] = "TemplateUpload";
+    ViewData["RootList"] = Model.Data.Files[""];
 }
 
-<h1>TemplateUpload</h1>
+<h2>Razorテンプレート開発改造室</h2>
 
 <div class="form-group">
-    <label asp-for="Data.Libraries" class="control-label"></label>
-    <select asp-for="Data.Libraries" asp-items="ViewBag.SelectList" class="form-control">
-        <option value="">----- 言語・ライブラリ -----</option>
-    </select>
-    <span asp-validation-for="Data.Libraries" class="text-danger"></span>
+    <div class="row">
+        <div class="col-4">
+            <select id="SelectMainDirectory" asp-items="ViewBag.RootList" class="form-control">
+                <option value="">----- 言語・ライブラリ -----</option>
+            </select>
+        </div>
+        <div class="col-4">
+            <select id="SelectSubDirectory" class="form-control">
+                <option value="">----- 分類 -----</option>
+            </select>
+        </div>
+        <div class="col-4">
+            <select id="SelectFile" asp-for="FilePath" class="form-control">
+                <option value="">----- ファイル -----</option>
+            </select>
+        </div>
+    </div>
+
+
+
+    <textarea placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="30" style="font-size: 12px;">@ViewData["Script"]</textarea>
+
+    <form method="post">
+        <button type="submit" class="btn btn-primary btn-sm">GOGO!</button>
+    </form>
 </div>
 
+@section Scripts {
+
+    <script>
+        // ページを全て読み込み終わった後に実行する
+        $(window).on('load', function() {
+        });
+
+        $('#SelectMainDirectory').on('change', function () {
+            if (this.value != '') {
+                alert(this.value);
+            }
+        });
+
+        $('#SelectSubDirectory').on('change', function () {
+            if (this.value != '') {
+                alert(this.value);
+            }
+        });
+
+        $('#SelectFile').on('change', function () {
+            if (this.value != '') {
+                alert(this.value);
+            }
+        });
+        
+////追加するとき
+//$('#select').append($('<option>').html("追加される項目名").val("追加される値"));
+
+////全て取り除くとき
+//$('#select > option').remove();
+
+    </script>
+}
