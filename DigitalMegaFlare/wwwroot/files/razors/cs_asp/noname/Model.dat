@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 @{
 	var Index = int.Parse(Model.Settings.Index); 
 	var Mod = Model.RootList[Index];
@@ -59,9 +60,9 @@ namespace @(Model.Settings.Name).Models
 
 ★これ覚えておこう。
 @functions {
-    public string GetHello()
+    public string GetField(string comment)
     {
-        return "Hello";
+        return $"Hello and Goodbye {comment}!";
     }
     
     // プロパティの定義
@@ -79,5 +80,5 @@ namespace @(Model.Settings.Name).Models
     }
 }
 
-<div>From method: @GetHello()</div> 
+<div>From method: @GetField("aaaa")</div> 
 *@
