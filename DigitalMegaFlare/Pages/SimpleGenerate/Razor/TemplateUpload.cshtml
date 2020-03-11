@@ -1,5 +1,6 @@
 ﻿@page
 @model DigitalMegaFlare.Pages.SimpleGenerate.Razor.TemplateUploadModel
+@using Newtonsoft.Json;
 @{
     ViewData["Title"] = "TemplateUpload";
     ViewData["RootList"] = Model.Data.Files[""];
@@ -36,15 +37,25 @@
 </div>
 
 @section Scripts {
-
     <script>
+        var _files = @Html.Raw(JsonConvert.SerializeObject(Model.Data.Files));
+
         // ページを全て読み込み終わった後に実行する
         $(window).on('load', function() {
         });
 
         $('#SelectMainDirectory').on('change', function () {
             if (this.value != '') {
-                alert(this.value);
+                
+                $('#SelectSubDirectory').children().remove();
+                $('#SelectFile').children().remove();
+                
+                $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
+                $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+                _files[this.value].forEach((value) => {
+                    //$('#SelectSubDirectory').append(<option value="">----- 分類 -----</option>);
+                    $('#SelectSubDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+                });
             }
         });
 

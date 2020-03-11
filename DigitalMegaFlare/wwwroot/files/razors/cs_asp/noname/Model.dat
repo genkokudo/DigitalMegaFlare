@@ -31,32 +31,54 @@ namespace @(Model.Settings.Name).Models
 		@:public @(field.Type) @(field.Name) { get; set; }
 		}
 		@if(Mod.IsMaster){
+		@:/// <summary>
+		@:/// 並び順
+		@:/// </summary>
+		@:public int Order { get; set; }
 		@:
 		@:/// <summary>
-		@:/// 初期値を作成します。
+		@:/// 初期値を作成する
 		@:/// </summary>
-		@:public static @(Mod.Name)[] InitialData
+		@:/// <returns></returns>
+		@:internal static @(Mod.Name)[] GetInitialData()
 		@:{
-		@:	get
+			// 初期値のリスト
+			var listName = "";
+			foreach(var field in Mod.FieldList){
+				// stringの場合引用符を入れる
+				var quotation = field.Type == "string" ? "\"" : "";
+				var comma = "";
+				if(field.ValueList.Count > 0){
+					listName = field.MultipleCamelFieldName;
+					var initialValues = $"var {field.MultipleCamelFieldName} = new {field.Type}[] " + "{ ";
+						foreach(var value in field.ValueList){
+							initialValues += comma + quotation + value.Value + quotation;
+							comma = ", ";
+						}
+					initialValues += "};";
+			@:@(initialValues)
+				}
+			}
+		@:	var result = new List<@(Mod.Name)>();
+		@:	var order = 0;
+		@:	for (int i = 0; i < @(listName).Count(); i++)
 		@:	{
-		@:		var names = new[] { "1", "2", "3", "4", "5" };
-		@:		var result = new List<@(Mod.Name)>();
-		@:		foreach (var name in names)
+		@:		order++;
+		@:		result.Add(new @(Mod.Name)()
 		@:		{
-		@:			result.Add(new @(Mod.Name)() { Name = name });
-		@:		}
-		@:		return result.ToArray();
+					// TODO:Orderは自動的にやってくれるようにすること
+		@:			Order = order,
+			foreach(var field in Mod.FieldList){
+		@:			@(field.Name) = @(field.MultipleCamelFieldName)[i],
+			}
+		@:		});
 		@:	}
+		@:	return result.ToArray();
 		@:}
 }	}
 }
 
-
 @*
-★固定ゲッターのInitialDataについて
-・IsMasterの場合のみ作成
-・値リストから全て生成可能、要Pascal→Camel変換
-・複数形の生成は無理なので、入力させる。
 
 ★これ覚えておこう。
 @functions {

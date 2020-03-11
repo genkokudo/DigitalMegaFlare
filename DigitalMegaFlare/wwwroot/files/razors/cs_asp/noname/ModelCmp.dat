@@ -31,6 +31,10 @@ namespace @(Model.Settings.Name).Entities
 		@:public @(field.Type) @(field.Name) { get; set; }
 		}
 		@if(Mod.IsMaster){
+		@:/// <summary>
+		@:/// 並び順を取得、もしくは、設定します。
+		@:/// </summary>
+		@:public int Order { get; set; }
 		@:
 		@:/// <summary>
 		@:/// 初期値を作成します。
@@ -73,10 +77,3 @@ namespace @(Model.Settings.Name).Entities
 		@:}
 }	}
 }
-
-@*
-		/// <summary>
-		/// 並び順を取得、もしくは、設定します。
-		/// </summary>
-		public int Order { get; set; }
-*@
