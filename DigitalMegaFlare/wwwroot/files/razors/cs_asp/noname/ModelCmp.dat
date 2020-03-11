@@ -4,14 +4,22 @@ using System.ComponentModel.DataAnnotations;
 	var Index = int.Parse(Model.Settings.Index); 
 	var Mod = Model.RootList[Index];
 }
+@functions {
+    public string GetField(string comment)
+    {
+        return $"Hello and Goodbye {comment}!";
+    }
+}
 
 namespace @(Model.Settings.Name).Entities
 {
+@GetField("aaaa")
 	/// <summary>
 	/// @(Mod.Comment)です。
 	/// </summary>
 	public class @(Mod.Name)Entity
 	{
+
 		/// <summary>
 		/// IDを取得、もしくは、設定します。
 		/// </summary>
@@ -30,15 +38,6 @@ namespace @(Model.Settings.Name).Entities
 		@:public @(field.Type) @(field.Name) { get; set; }
 		}
 		@if(Mod.IsMaster){
-			// 初期値のリスト
-			foreach(var field in Mod.FieldList){
-				var initialValues = $"var {field.Name} = new[] { "
-					foreach(var value in field.ValueList){
-						initialValues += value.Value + ", ";
-					}
-				initialValues += "};";
-			@: @(initialValues)
-			}
 		@:
 		@:/// <summary>
 		@:/// 初期値を作成します。
@@ -46,20 +45,35 @@ namespace @(Model.Settings.Name).Entities
 		@:/// <returns></returns>
 		@:internal static @(Mod.Name)Entity[] GetInitialData()
 		@:{
-		@:	var reduceProbabilityCategories = new[] { 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5 };
-		@:	var impactCategories = new[] { 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5 };
-		@:	var riskCategories = new[] { 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5 };
+			// 初期値のリスト
+			var listName = "";
+			foreach(var field in Mod.FieldList){
+				// stringの場合引用符を入れる
+				var quotation = field.Type == "string" ? "\"" : "";
+				var comma = "";
+				if(field.ValueList.Count > 0){
+					listName = field.MultipleCamelFieldName;
+					var initialValues = $"var {field.MultipleCamelFieldName} = new {field.Type}[] " + "{ ";
+						foreach(var value in field.ValueList){
+							initialValues += comma + quotation + value.Value + quotation;
+							comma = ", ";
+						}
+					initialValues += "};";
+			@:@(initialValues)
+				}
+			}
 		@:	var result = new List<@(Mod.Name)Entity>();
 		@:	var order = 0;
-		@:	for (int i = 0; i < reduceProbabilityCategories.Count(); i++)
+		@:	for (int i = 0; i < @(listName).Count(); i++)
 		@:	{
 		@:		order++;
 		@:		result.Add(new @(Mod.Name)Entity()
 		@:		{
+					// TODO:Orderは自動的にやってくれるようにすること
 		@:			Order = order,
-		@:			ReduceProbabilityCategory = reduceProbabilityCategories[i],
-		@:			ImpactCategory = impactCategories[i],
-		@:			RiskCategory = riskCategories[i]
+			foreach(var field in Mod.FieldList){
+		@:			@(field.Name) = @(field.MultipleCamelFieldName)[i],
+			}
 		@:		});
 		@:	}
 		@:	return result.ToArray();

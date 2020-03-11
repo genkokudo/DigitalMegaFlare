@@ -17,17 +17,17 @@ namespace @(Model.Settings.Name).Models
 		/// </summary>
 		[Key]
 		public long Id { get; set; }
-		@foreach(var item in Mod.FieldList){
+		@foreach(var field in Mod.FieldList){
 		@* フィールドのリスト *@
 		var attribute = string.Empty;
-		if(!string.IsNullOrWhiteSpace(item.Attribute)){
-			attribute = $"\r\n\t\t{item.Attribute}";
+		if(!string.IsNullOrWhiteSpace(field.Attribute)){
+			attribute = $"\r\n\t\t{field.Attribute}";
 		}
 		@:
 		@:/// <summary>
-		@:/// @(item.Comment)
+		@:/// @(field.Comment)
 		@:/// </summary>@(attribute)
-		@:public @(item.Type) @(item.Name) { get; set; }
+		@:public @(field.Type) @(field.Name) { get; set; }
 		}
 		@if(Mod.IsMaster){
 		@:
