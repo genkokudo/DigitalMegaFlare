@@ -53,7 +53,6 @@
                 $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
                 $('#SelectFile').append('<option value="">----- ファイル -----</option>');
                 _files[this.value].forEach((value) => {
-                    //$('#SelectSubDirectory').append(<option value="">----- 分類 -----</option>);
                     $('#SelectSubDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
                 });
             }
@@ -61,7 +60,12 @@
 
         $('#SelectSubDirectory').on('change', function () {
             if (this.value != '') {
-                alert(this.value);
+                $('#SelectFile').children().remove();
+                $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+
+                _files[this.value].forEach((value) => {
+                    $('#SelectFile').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+                });
             }
         });
 
