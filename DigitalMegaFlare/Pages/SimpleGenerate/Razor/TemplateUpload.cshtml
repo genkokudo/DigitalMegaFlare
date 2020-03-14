@@ -27,9 +27,7 @@
         </div>
     </div>
 
-
-
-    <textarea placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="30" style="font-size: 12px;">@ViewData["Script"]</textarea>
+    <textarea id="TextArea" placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="30" style="font-size: 12px;">@ViewData["Script"]</textarea>
 
     <form method="post">
         <button type="submit" class="btn btn-primary btn-sm">GOGO!</button>
@@ -46,10 +44,11 @@
 
         $('#SelectMainDirectory').on('change', function () {
             if (this.value != '') {
-                
+                // 取り除く
                 $('#SelectSubDirectory').children().remove();
                 $('#SelectFile').children().remove();
-                
+
+                // 選択肢のセット
                 $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
                 $('#SelectFile').append('<option value="">----- ファイル -----</option>');
                 _files[this.value].forEach((value) => {
@@ -60,9 +59,11 @@
 
         $('#SelectSubDirectory').on('change', function () {
             if (this.value != '') {
+                // 取り除く
                 $('#SelectFile').children().remove();
                 $('#SelectFile').append('<option value="">----- ファイル -----</option>');
-
+                
+                // 選択肢のセット
                 _files[this.value].forEach((value) => {
                     $('#SelectFile').append('<option value="' + value.Value + '">' + value.Text + '</option>');
                 });
@@ -70,16 +71,29 @@
         });
 
         $('#SelectFile').on('change', function () {
-            if (this.value != '') {
-                alert(this.value);
-            }
-        });
-        
-////追加するとき
-//$('#select').append($('<option>').html("追加される項目名").val("追加される値"));
 
-////全て取り除くとき
-//$('#select > option').remove();
+            var formData = new FormData();
+            formData.append('filepath', this.value);
+
+            $.ajax({
+                type: 'POST',
+                url: '/Razor/Load',
+                contentType: false,
+                processData: false,
+                data: formData
+            }).then(
+                function (data) {
+                    if (data != null && data.message != undefined) {
+                        alert(data.message);
+                        $('#TextArea').text(data.message);
+                    }
+                },
+                function (data) {
+                    alert('ファイルが取れなかった');
+                }
+            );
+
+        });
 
     </script>
 }
