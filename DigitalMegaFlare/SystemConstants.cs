@@ -11,6 +11,7 @@ namespace DigitalMegaFlare
     public class SystemConstants
     {
         public const string FileDirectory = "files";
+        public const string BackupFileDirectory = "bkfiles";
 
         // TODO:使ってない定数沢山
 

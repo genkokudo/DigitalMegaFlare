@@ -30,7 +30,15 @@
     <textarea id="TextArea" placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="30" style="font-size: 12px;">@ViewData["Script"]</textarea>
 
     <form method="post">
-        <button type="submit" class="btn btn-primary btn-sm">GOGO!</button>
+        <div class="row">
+            <div class="col">
+                <button id="Update" type="button" class="btn btn-primary btn-sm">更新</button>
+            </div>
+            <div class="col d-flex  justify-content-end">
+                <input id="Filename" type="text" placeholder="ファイル名（拡張子なし）" />
+                <button id="Create" type="button" class="btn btn-primary btn-sm">新規作成</button>
+            </div>
+        </div>
     </form>
 </div>
 
@@ -43,14 +51,14 @@
         });
 
         $('#SelectMainDirectory').on('change', function () {
-            if (this.value != '') {
-                // 取り除く
-                $('#SelectSubDirectory').children().remove();
-                $('#SelectFile').children().remove();
+            // 取り除く
+            $('#SelectSubDirectory').children().remove();
+            $('#SelectFile').children().remove();
+            $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
+            $('#SelectFile').append('<option value="">----- ファイル -----</option>');
 
-                // 選択肢のセット
-                $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
-                $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+            // 選択肢のセット
+            if (this.value != '') {
                 _files[this.value].forEach((value) => {
                     $('#SelectSubDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
                 });
@@ -58,23 +66,22 @@
         });
 
         $('#SelectSubDirectory').on('change', function () {
+            // 取り除く
+            $('#SelectFile').children().remove();
+            $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+
+            // 選択肢のセット
             if (this.value != '') {
-                // 取り除く
-                $('#SelectFile').children().remove();
-                $('#SelectFile').append('<option value="">----- ファイル -----</option>');
-                
-                // 選択肢のセット
                 _files[this.value].forEach((value) => {
                     $('#SelectFile').append('<option value="' + value.Value + '">' + value.Text + '</option>');
                 });
             }
         });
 
+        // ファイル選択時、サーバからRazorを取得
         $('#SelectFile').on('change', function () {
-
             var formData = new FormData();
             formData.append('filepath', this.value);
-
             $.ajax({
                 type: 'POST',
                 url: '/Razor/Load',
@@ -84,7 +91,6 @@
             }).then(
                 function (data) {
                     if (data != null && data.message != undefined) {
-                        alert(data.message);
                         $('#TextArea').text(data.message);
                     }
                 },
@@ -92,7 +98,58 @@
                     alert('ファイルが取れなかった');
                 }
             );
+        });
 
+        $('#Update').on('click', function () {
+            if ($('#SelectFile option:selected').val() == '') {
+                alert('更新するファイルを選択すること。');
+                return;
+            }
+            var formData = new FormData();
+            formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
+            formData.append('subDir', $('#SelectSubDirectory option:selected').text());
+            formData.append('filename', $('#SelectFile option:selected').text());
+            formData.append('text', $('#TextArea').val());  // text()だと、元のファイル内容になる。なぜなのかは知らない。
+            $.ajax({
+                type: 'POST',
+                url: '/Razor/Update',
+                contentType: false,
+                processData: false,
+                data: formData
+            }).then(
+                function (data) {
+                    alert(data.message);
+                },
+                function (data) {
+                    alert('ファイルが取れなかった');
+                }
+            );
+        });
+
+        $('#Create').on('click', function () {
+            if ($('#SelectMainDirectory option:selected').val() == '' || $('#SelectSubDirectory option:selected').val() == '') {
+                alert('ディレクトリを選択すること。');
+                return;
+            }
+            var formData = new FormData();
+            formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
+            formData.append('subDir', $('#SelectSubDirectory option:selected').text());
+            formData.append('filename', $('#Filename').val());
+            formData.append('text', $('#TextArea').val());
+            $.ajax({
+                type: 'POST',
+                url: '/Razor/Create',
+                contentType: false,
+                processData: false,
+                data: formData
+            }).then(
+                function (data) {
+                    alert(data.message);
+                },
+                function (data) {
+                    alert('ファイルが取れなかった');
+                }
+            );
         });
 
     </script>

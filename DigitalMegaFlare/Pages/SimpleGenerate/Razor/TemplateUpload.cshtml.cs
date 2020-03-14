@@ -83,9 +83,9 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         /// <returns></returns>
         public async Task<TemplateUploadResult> Handle(TemplateUploadQuery query, CancellationToken token)
         {
-            // TODO:リストボックスのやり方忘れた
             var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
 
+            // リストボックスの選択肢を検索する
             var list = TreeNode<string>.GetDirectoryFileList(razorFileDirectry);
 
             var files = new Dictionary<string, List<SelectListItem>>();
