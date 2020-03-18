@@ -110,7 +110,7 @@ namespace DigitalMegaFlare.Controllers
         {
             if (!directory.EndsWith("\\") && !directory.EndsWith("/"))
             {
-                directory = directory + "/";
+                directory += "/";
             }
             if (Directory.Exists(directory))    // 環境によっては正しく判定出来ないらしい
             {

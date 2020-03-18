@@ -50,6 +50,7 @@
         $(window).on('load', function() {
         });
 
+        // リストボックス：メイン
         $('#SelectMainDirectory').on('change', function () {
             // 取り除く
             $('#SelectSubDirectory').children().remove();
@@ -65,6 +66,7 @@
             }
         });
 
+        // リストボックス：サブ
         $('#SelectSubDirectory').on('change', function () {
             // 取り除く
             $('#SelectFile').children().remove();
@@ -100,6 +102,7 @@
             );
         });
 
+        // 更新
         $('#Update').on('click', function () {
             if ($('#SelectFile option:selected').val() == '') {
                 alert('更新するファイルを選択すること。');
@@ -126,6 +129,7 @@
             );
         });
 
+        // 新規作成
         $('#Create').on('click', function () {
             if ($('#SelectMainDirectory option:selected').val() == '' || $('#SelectSubDirectory option:selected').val() == '') {
                 alert('ディレクトリを選択すること。');

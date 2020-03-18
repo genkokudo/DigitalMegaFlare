@@ -1,0 +1,24 @@
+﻿using CmmpWeb.Entities;
+using System.Linq;
+
+namespace @(Model.Settings.Name).Infrastructure.Database
+{
+	public class DbInitializer
+	{
+		public static void Initialize(ApplicationDbContext context)
+		{
+			if (context.Companies.Any())
+			{
+				// マスタデータ作成済ならば何もしない
+				return;
+			}
+			@foreach(var mod in Model.RootList){
+			if(mod.IsMaster){
+			@:context.@(mod.Name).AddRange(@(mod.Name)Entity.GetInitialData());
+			@:context.SaveChanges();
+			}
+			}
+
+		}
+	}
+}
