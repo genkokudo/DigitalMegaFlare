@@ -1,0 +1,89 @@
+﻿using @(Model.Settings.Name).Entities;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
+
+namespace @(Model.Settings.Name).Infrastructure.Database
+{
+    public class ApplicationDbContext : DbContext
+	{
+		private IDbContextTransaction _currentTransaction;
+
+		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+		{
+		}
+
+		@foreach(var mod in Model.RootList){
+		if(mod.MultipleName != ""){
+		@:// @(mod.Comment)
+		@:public DbSet<@(mod.Name)Entity> @(mod.MultipleName) { get; set; }
+		@:
+		}
+		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			// 現在のところ、複合indexは設定していない
+			//modelBuilder.Entity<CourseAssignment>()
+			//    .HasKey(c => new { c.CourseID, c.InstructorID });
+
+			// ユーザ名はユニーク制約を付ける
+			modelBuilder.Entity<UserEntity>()
+				.HasIndex(m => m.Name)
+				.IsUnique();
+		}
+		@if(Model.Settings.IsRapTransaction){
+		@:
+		@:#region トランザクション処理のラップ
+		@:public async Task BeginTransactionAsync()
+		@:{
+		@:	if (_currentTransaction != null)
+		@:	{
+		@:		return;
+		@:	}
+		@:	_currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted).ConfigureAwait(false);
+		@:}
+		@:
+		@:public async Task CommitTransactionAsync()
+		@:{
+		@:	try
+		@:	{
+		@:		await SaveChangesAsync().ConfigureAwait(false);
+		@:
+		@:		_currentTransaction?.Commit();
+		@:	}
+		@:	catch
+		@:	{
+		@:		RollbackTransaction();
+		@:		throw;
+		@:	}
+		@:	finally
+		@:	{
+		@:		if (_currentTransaction != null)
+		@:		{
+		@:			_currentTransaction.Dispose();
+		@:			_currentTransaction = null;
+		@:		}
+		@:	}
+		@:}
+		@:
+		@:public void RollbackTransaction()
+		@:{
+		@:	try
+		@:	{
+		@:		_currentTransaction?.Rollback();
+		@:	}
+		@:	finally
+		@:	{
+		@:		if (_currentTransaction != null)
+		@:		{
+		@:			_currentTransaction.Dispose();
+		@:			_currentTransaction = null;
+		@:		}
+		@:	}
+		@:}
+		@:#endregion
+		}
+	}
+}
