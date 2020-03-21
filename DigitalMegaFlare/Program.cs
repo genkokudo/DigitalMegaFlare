@@ -7,11 +7,13 @@ using DigitalMegaFlare.Data;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace DigitalMegaFlare
 {
@@ -114,18 +116,23 @@ namespace DigitalMegaFlare
                 // NLog を有効にする.
                 .UseNLog();
 
-        //// Core1系で毎回書いていたコードをラップしている
-        //public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        //    WebHost.CreateDefaultBuilder(args)
-        //        .UseStartup<Startup>()
-        //        .ConfigureLogging((hostingContext, logging) =>
-        //        {
-        //            // NLog 以外で設定された Provider の無効化.
-        //            logging.ClearProviders();
-        //            // 最小ログレベルの設定.
-        //            logging.SetMinimumLevel(LogLevel.Trace);
-        //        })
-        //        // NLog を有効にする.
-        //        .UseNLog();
+        /// <summary>
+        /// このホスティングの方法だと、EFCoreのマイグレーションでエラーが出るため
+        /// このようなFactoryクラスを準備する
+        /// </summary>
+        public class ContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+        {
+            public ApplicationDbContext CreateDbContext(string[] args)
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+                optionsBuilder.UseMySql("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;",
+                    mySqlOptions =>
+                    {
+                        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
+                    }
+                );
+                return new ApplicationDbContext(optionsBuilder.Options);
+            }
+        }
     }
 }

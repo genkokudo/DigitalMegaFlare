@@ -3,10 +3,10 @@
 @using Newtonsoft.Json;
 @{
     ViewData["Title"] = "ExcelUpload";
-    if (ViewData["Error"] != null)
+    @*if (ViewData["Error"] != null)
     {
         <div role="alert" class="alert fade show alert-danger">@ViewData["Error"]</div>
-    }
+    }*@
 }
 
 <style>
@@ -16,19 +16,51 @@
     }
 </style>
 
-<h1>ExcelUpload</h1>
+<h3>ExcelUpload</h3>
 <p>とりあえず、.xlaxをアップロードして表示します。</p>
 
+<!-- アップロード -->
 <form id="form" method="post" enctype="multipart/form-data">
     <input type="file" name="file" accept=".xlsx" />
+    <input type="text" name="comment" placeholder="コメント" />
     <input type="submit" asp-page-handler="Upload" value="送信" />
+
+    <!-- 一覧 -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>元ファイル名</th>
+                <th>日時(UTC)</th>
+                <th>コメント</th>
+                <th>ロック</th>
+                <th>DL</th>
+                <th>詳細</th>
+                <th>削除</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.History.Histories)
+            {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.RawFileName)</td>
+                <td>@Html.DisplayFor(modelItem => item.InputDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.Comment)</td>
+                <td><input type="submit" asp-page-handler="Lock" asp-route-id="@item.Id" value="ロック" /></td>
+                <td><input type="submit" asp-page-handler="Download" asp-route-id="@item.Id" value="DL" /></td>
+                <td><input type="submit" asp-page-handler="Detail" asp-route-id="@item.Id" value="詳細" /></td>
+                <td><input type="submit" asp-page-handler="Delete" asp-route-id="@item.Id" disabled="@item.IsLocked" value="削除" /></td>
+            </tr>
+            }
+        </tbody>
+    </table>
 </form>
 
+<!-- Excelの内容を表示する -->
 <!-- タブ部分 -->
 <ul id="myTab" class="nav nav-tabs" role="tablist">
     @for (int i = 0; i < Model.Data.SheetNames.Count; i++)
     {
-        var active = i==0 ? " active" : "";
+        var active = i == 0 ? " active" : "";
         <li class="nav-item">
             <a href="#sheet@(i)" id="home-tab" class="nav-link@(active)" role="tab" data-toggle="tab">@(Model.Data.SheetNames[i])</a>
         </li>
@@ -39,7 +71,7 @@
 <div id="myTabContent" class="tab-content mt-3">
     @for (int i = 0; i < Model.Data.SheetNames.Count; i++)
     {
-        var active = i==0 ? " active" : "";
+        var active = i == 0 ? " active" : "";
         <div id="sheet@(i)" class="tab-pane@(active)" role="tabpanel">
             <!-- 表 -->
             <div class="row mt-3 p-0">
@@ -53,7 +85,6 @@
         </div>
     }
 </div>
-
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

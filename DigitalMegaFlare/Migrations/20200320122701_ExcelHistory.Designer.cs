@@ -3,14 +3,16 @@ using System;
 using DigitalMegaFlare.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DigitalMegaFlare.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200320122701_ExcelHistory")]
+    partial class ExcelHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,9 +25,6 @@ namespace DigitalMegaFlare.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Comment")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("FileName")
                         .HasColumnType("longtext");
 
@@ -37,9 +36,6 @@ namespace DigitalMegaFlare.Migrations
 
                     b.Property<string>("Ip")
                         .HasColumnType("longtext");
-
-                    b.Property<bool>("IsLocked")
-                        .HasColumnType("bit");
 
                     b.Property<string>("RawFileName")
                         .HasColumnType("longtext");

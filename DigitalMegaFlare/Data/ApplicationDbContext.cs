@@ -11,6 +11,7 @@ namespace DigitalMegaFlare.Data
     {
         public DbSet<TestData> TestDatas { get; set; }
         public DbSet<ExcelInputHistory> ExcelInputHistories { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

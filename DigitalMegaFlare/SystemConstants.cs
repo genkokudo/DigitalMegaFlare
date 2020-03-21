@@ -13,6 +13,11 @@ namespace DigitalMegaFlare
         public const string FileDirectory = "files";
         public const string BackupFileDirectory = "bkfiles";
 
+        /// <summary>
+        /// Excelアップロード先
+        /// </summary>
+        public const string UploadedExcelsDirectory = "uploadedExcels";
+
         // TODO:使ってない定数沢山
 
         // 環境

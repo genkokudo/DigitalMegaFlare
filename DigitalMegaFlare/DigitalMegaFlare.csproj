@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -42,6 +43,7 @@
     <Folder Include="Data\Migrations\" />
     <Folder Include="wwwroot\bkfiles\razors\cs_asp\noname\" />
     <Folder Include="wwwroot\files\excels\" />
+    <Folder Include="wwwroot\files\uploadedExcels\" />
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\temp\" />
     <Folder Include="wwwroot\bkfiles\" />
