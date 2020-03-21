@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,21 +16,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Mintea.RazorHelper;
+using RazorLight;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
 {
-    // やることリスト
-    // Uploadボタンの確認
-    // 一覧表示
-    // ・マスター化
-    // ・削除(bkfilesに移動)
-    // ・生成
-    // ・Excelダウンロード
-    // ・Excelのプレビュー
-
-    // 上が終わったら
-    // Razorのディレクトリ作成機能付けようか。
-    // これで完成。終わり。リリース。ReactへGO
 
     public class ExcelUploadModel : PageModel
     {
@@ -52,23 +43,16 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // Excelプレビュー
-            Data = await _mediator.Send(new ExcelUploadQuery());
-
+            if (Data == null)
+            {
+                Data = await _mediator.Send(new ExcelUploadQuery());
+            }
             // 一覧
             History = await _mediator.Send(new ExcelListQuery());
-
-            if (Data.RawExcel == null)
-            {
-                ViewData["Error"] = "ファイルが存在しません。";
-            }
-            else if (Data.RawExcel.Count == 0)
-            {
-                ViewData["Error"] = "ファイルが空です";
-            }
             return Page();
         }
 
+        #region ロック、ダウンロード、詳細ボタン
         /// <summary>
         /// ロックボタン
         /// </summary>
@@ -91,11 +75,11 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<IActionResult> OnPostDownloadAsync(long id)
+        public IActionResult OnPostDownload(long id)
         {
             var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            //return File(System.Text.Encoding.UTF8.GetBytes(output), "application/xml", Input.Title + ".snippet");
-            return await OnGetAsync();
+            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
+            return File(new FileStream(fullpath, FileMode.Open), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data.RawFileName);
         }
 
         /// <summary>
@@ -106,10 +90,14 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         public async Task<IActionResult> OnPostDetailAsync(long id)
         {
             var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            // 再検索
+            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
+
+            Data = await _mediator.Send(new ExcelUploadQuery { FilePath = fullpath });
             return await OnGetAsync();
         }
+        #endregion
 
+        #region 削除ボタン
         /// <summary>
         /// 削除ボタン
         /// </summary>
@@ -118,9 +106,114 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         public async Task<IActionResult> OnPostDeleteAsync(long id)
         {
             var data = _db.ExcelInputHistories.First(x => x.Id == id);
+            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
+            
+            // 削除じゃなくてバックアップにする
+            var backupFilePath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.BackupFileDirectory, "excels", data.FileName);
+            System.IO.File.Move(fullpath, backupFilePath);
+
+            // DBからレコードを削除
+            _db.ExcelInputHistories.Remove(data);
+            await _db.SaveChangesAsync();
+
             // 再検索
             return await OnGetAsync();
         }
+        #endregion
+
+        #region 生成ボタン
+        /// <summary>
+        /// 生成ボタン
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> OnPostGenerateAsync(long id)
+        {
+            var data = _db.ExcelInputHistories.First(x => x.Id == id);
+            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
+            string excelName = data.FileName;
+
+            // Excelから読み込み
+            var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory);
+            var excel = RazorHelper.ReadExcel(excelDirectry, excelName, true);
+
+            // エンジンと一時出力先を作成
+            var engine = new RazorLightEngineBuilder()
+                          .UseEmbeddedResourcesProject(typeof(Program))
+                          .UseMemoryCachingProvider()
+                          .DisableEncoding()
+                          .Build();
+            string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
+            RazorHelper.SafeCreateDirectory(outPath);
+
+            // 一時ファイル消す
+            DirectoryInfo target = new DirectoryInfo(outPath);
+            foreach (FileInfo file in target.GetFiles())
+            {
+                file.Delete();
+            }
+
+            // Modelの作成
+            dynamic model;
+            try
+            {
+                model = RazorHelper.CreateModel(excel);
+            }
+            catch (Exception e)
+            {
+                ViewData["Error"] = e.Message;
+                return Page();
+            }
+
+            // リストを読んでソース生成する
+            // ↓この"RootList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は"RootList"固定にする。
+            var outFileList = new List<string>();
+            var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
+            for (int i = 0; i < model.RootList.Count; i++)
+            {
+                // 変数入れる
+                model.Settings.Index = i.ToString();
+
+                // テンプレート読み込み
+                // ファイルアクセス処理
+                var template = System.IO.File.ReadAllText(Path.Combine(razorFileDirectry, model.RootList[i].RazorTemplate));
+
+                // ソース生成
+                // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
+                var result = await engine.CompileRenderStringAsync($"{model.RootList[i].Name}", template, model);
+
+                // ファイル名生成
+                var resultFilename = await engine.CompileRenderStringAsync($"{model.RootList[i].Name}Name", model.RootList[i].OutputFileName, new { model.RootList[i].Name });
+
+                // 生成したファイルを一時保存（今回はやっつけで。本当は人によって一時フォルダ名変えるべき。）
+                // VisualStudioが勘違いを起こすのでファイル末尾に"_"をつける
+                var outFileName = $"{resultFilename}_";
+                outFileList.Add(outFileName);
+                System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), result, System.Text.Encoding.UTF8);
+
+                ViewData["Message"] = result;
+            }
+
+            // 圧縮ファイルの準備
+            string dateFormat = "yyyyMMddHHmmss";
+            string outFilePath = Path.Combine(outPath, $"{DateTime.UtcNow.ToString(dateFormat)}.zip");
+            // 一時保存したファイルをZipにする
+            using (ZipArchive archive = ZipFile.Open(outFilePath, ZipArchiveMode.Create))
+            {
+                foreach (var item in outFileList)
+                {
+                    archive.CreateEntryFromFile(
+                        Path.Combine(outPath, $"{item}"),
+                        $"{item.TrimEnd('_')}",
+                        //$"{excelName}/item.TrimEnd('_')}", // ディレクトリ分けする場合はこう書く
+                        CompressionLevel.NoCompression
+                        );
+                }
+            }
+
+            return File(new FileStream(outFilePath, FileMode.Open), "application/zip", $"{data.RawFileName}.zip");
+        }
+        #endregion
 
         #region Uploadボタン
         /// <summary>
@@ -142,7 +235,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                 using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
                 {
                     // ファイル情報を取得
-                    var serverFileName = GetUniqueName();
+                    var serverFileName = GetUniqueName() + ".xlsx";
                     IFileInfo fileInfo = provider.GetFileInfo(serverFileName);   // ファイル情報
 
                     // 指定したパスに保存する
@@ -166,7 +259,7 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
                     }
                 }
             }
-            // 再検索
+
             return await OnGetAsync();
         }
 
@@ -235,7 +328,8 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
     /// <summary>検索条件</summary>
     public class ExcelUploadQuery : IRequest<ExcelUploadResult>
     {
-        // 何もなし
+        /// <summary>ファイルパス</summary> 
+        public string FilePath { get; set; }
     }
 
     /// <summary>検索結果</summary>
@@ -272,69 +366,60 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         /// <returns></returns>
         public async Task<ExcelUploadResult> Handle(ExcelUploadQuery query, CancellationToken token)
         {
-            // ファイルアクセス処理
-            var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory);
-
             // ファイルの読み込み
             // 検索結果の格納
-            var result = ReadExcel(fileDirectry);
+            var result = ReadExcel(query.FilePath);
             return await Task.FromResult(result);
         }
 
         /// <summary>
         /// Excelを読み込む
         /// </summary>
-        /// <param name="directry">ディレクトリ</param>
-        /// <param name="filename">拡張子付きのファイル名</param>
+        /// <param name="filePath">ディレクトリ</param>
         /// <returns></returns>
-        private ExcelUploadResult ReadExcel(string directry, string filename = "file.xlsx")
+        private ExcelUploadResult ReadExcel(string filePath)
         {
             // ファイルの読み込み
             List<string> sheetNames = new List<string>();
             List<List<List<string>>> xlsx = new List<List<List<string>>>();
-            using (PhysicalFileProvider provider = new PhysicalFileProvider(directry))
+            
+            if (!string.IsNullOrWhiteSpace(filePath))
             {
-                // ファイル情報を取得
-                IFileInfo fileInfo = provider.GetFileInfo(filename);
-
-                // ファイル存在チェック
-                if (fileInfo.Exists)
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                using (var wb = new XLWorkbook(stream))
                 {
-                    using (var wb = new XLWorkbook(fileInfo.PhysicalPath))
+                    foreach (var ws in wb.Worksheets)
                     {
-                        foreach (var ws in wb.Worksheets)
+                        // ワークシート
+                        List<List<string>> sheet = new List<List<string>>();
+
+                        // シート名を取得
+                        sheetNames.Add(ws.Name);
+
+                        //"行数:" + ws.LastCellUsed().Address.RowNumber.ToString()
+                        //"列数:" + ws.LastCellUsed().Address.ColumnNumber.ToString()
+                        //"列記号:" + ws.LastCellUsed().Address.ColumnLetter.ToString()
+
+                        for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
                         {
-                            // ワークシート
-                            List<List<string>> sheet = new List<List<string>>();
-
-                            // シート名を取得
-                            sheetNames.Add(ws.Name);
-
-                            //"行数:" + ws.LastCellUsed().Address.RowNumber.ToString()
-                            //"列数:" + ws.LastCellUsed().Address.ColumnNumber.ToString()
-                            //"列記号:" + ws.LastCellUsed().Address.ColumnLetter.ToString()
-
-                            for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
+                            List<string> raw = new List<string>();
+                            for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
                             {
-                                List<string> raw = new List<string>();
-                                for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
-                                {
-                                    raw.Add(ws.Cell(i, j).Value.ToString());
-                                }
-                                sheet.Add(raw);
+                                raw.Add(ws.Cell(i, j).Value.ToString());
                             }
-
-                            xlsx.Add(sheet);
+                            sheet.Add(raw);
                         }
+
+                        xlsx.Add(sheet);
                     }
                 }
-
-                return new ExcelUploadResult
-                {
-                    RawExcel = xlsx,
-                    SheetNames = sheetNames
-                };
             }
+
+            return new ExcelUploadResult
+            {
+                RawExcel = xlsx,
+                SheetNames = sheetNames
+            };
         }
 
         #region Excelファイル作成（使ってない）

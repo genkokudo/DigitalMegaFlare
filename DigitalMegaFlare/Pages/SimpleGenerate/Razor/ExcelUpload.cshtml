@@ -36,6 +36,7 @@
                 <th>DL</th>
                 <th>詳細</th>
                 <th>削除</th>
+                <th>生成</th>
             </tr>
         </thead>
         <tbody>
@@ -49,6 +50,7 @@
                 <td><input type="submit" asp-page-handler="Download" asp-route-id="@item.Id" value="DL" /></td>
                 <td><input type="submit" asp-page-handler="Detail" asp-route-id="@item.Id" value="詳細" /></td>
                 <td><input type="submit" asp-page-handler="Delete" asp-route-id="@item.Id" disabled="@item.IsLocked" value="削除" /></td>
+                <td><input type="submit" asp-page-handler="Generate" asp-route-id="@item.Id" value="生成" /></td>
             </tr>
             }
         </tbody>
