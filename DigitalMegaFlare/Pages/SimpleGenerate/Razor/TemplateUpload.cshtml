@@ -6,7 +6,7 @@
     ViewData["RootList"] = Model.Data.Files[""];
 }
 
-<h2>Razorテンプレート開発改造室</h2>
+<h3>Razorテンプレート開発改造室</h3>
 
 <div class="form-group">
     <div class="row">
@@ -27,12 +27,16 @@
         </div>
     </div>
 
-    <textarea id="TextArea" placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="30" style="font-size: 12px;">@ViewData["Script"]</textarea>
+    <textarea id="TextArea" placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="36" style="font-size: 12px;">@ViewData["Script"]</textarea>
 
     <form method="post">
         <div class="row">
             <div class="col">
                 <button id="Update" type="button" class="btn btn-primary btn-sm">更新</button>
+            </div>
+            <div class="col d-flex  justify-content-end">
+                <input id="Foldername" type="text" placeholder="フォルダ名" />
+                <button id="Folder" type="button" class="btn btn-primary btn-sm">フォルダ作成</button>
             </div>
             <div class="col d-flex  justify-content-end">
                 <input id="Filename" type="text" placeholder="ファイル名（拡張子なし）" />
@@ -129,6 +133,28 @@
             );
         });
 
+        // フォルダ作成
+        $('#Folder').on('click', function () {
+            var formData = new FormData();
+            formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
+            formData.append('Foldername', $('#Foldername').val());
+            $.ajax({
+                type: 'POST',
+                url: '/Razor/Folder',
+                contentType: false,
+                processData: false,
+                data: formData
+            }).then(
+                function (data) {
+                    alert(data.message);
+                    location.reload();
+                },
+                function (data) {
+                    alert('ファイルが取れなかった');
+                }
+            );
+        });
+
         // 新規作成
         $('#Create').on('click', function () {
             if ($('#SelectMainDirectory option:selected').val() == '' || $('#SelectSubDirectory option:selected').val() == '') {
@@ -149,6 +175,7 @@
             }).then(
                 function (data) {
                     alert(data.message);
+                    location.reload();
                 },
                 function (data) {
                     alert('ファイルが取れなかった');

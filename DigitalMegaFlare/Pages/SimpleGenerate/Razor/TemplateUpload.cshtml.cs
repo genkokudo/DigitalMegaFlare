@@ -16,9 +16,6 @@ using Mintea.Extensions;
 
 namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
 {
-    // 保存されているファイルの一覧を表示する
-    // プルダウン3つでやってみよう
-
     /// <summary>
     /// 保存されているファイルの一覧を表示する
     /// </summary>
@@ -38,11 +35,6 @@ namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
         public async Task<IActionResult> OnGetAsync()
         {
             Data = await _mediator.Send(new TemplateUploadQuery());
-            return Page();
-        }
-
-        public IActionResult OnPost()
-        {
             return Page();
         }
     }

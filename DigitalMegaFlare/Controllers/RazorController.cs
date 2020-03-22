@@ -38,6 +38,30 @@ namespace DigitalMegaFlare.Controllers
         }
 
         /// <summary>
+        /// フォルダ作成
+        /// </summary>
+        /// <param name="Foldername"></param>
+        /// <returns></returns>
+        public IActionResult Folder(string mainDir, string Foldername)
+        {
+            if (string.IsNullOrWhiteSpace(Foldername) || Foldername.Contains("\\") || Foldername.Contains("/") || Foldername.Contains("-----"))
+            {
+                return BadRequest(new { Message = $"だめです。" });
+            }
+            if (mainDir.Contains("-----"))
+            {
+                // メインディレクトリ作成
+                SafeCreateDirectory(Path.Combine(_razorFileDirectry, Foldername));
+            }
+            else
+            {
+                // サブディレクトリ作成
+                SafeCreateDirectory(Path.Combine(_razorFileDirectry, mainDir, Foldername));
+            }
+            return Ok(new { Message = $"作成しました" });
+        }
+
+        /// <summary>
         /// ファイル作成
         /// </summary>
         /// <param name="mainDir"></param>
