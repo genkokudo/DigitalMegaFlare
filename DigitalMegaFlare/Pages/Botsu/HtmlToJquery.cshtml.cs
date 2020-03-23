@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Mintea.HtmlToDom;
 
-namespace DigitalMegaFlare.Pages.SimpleGenerate
+namespace DigitalMegaFlare.Pages.Botsu
 {
     public class HtmlToJqueryModel : PageModel
     {

@@ -1,0 +1,17 @@
+﻿@page
+@model DigitalMegaFlare.Pages.Botsu.IndexModel
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    ViewData["Title"] = "謎のサイト ～Degital Mega Flare～";
+}
+
+    <div class="text-center">
+        <h1>没コーナー</h1>
+        @if (SignInManager.IsSignedIn(User))
+        {
+            // ログインしている人だけ
+            <p><a href="@Url.Content("~/Botsu/HtmlToJquery")">jQuery作成サービス</a></p>
+            <p><a href="@Url.Content("~/Botsu/Razor/CsvLabo")">CSV実験室</a></p>
+            <p><a href="@Url.Content("~/Botsu/Razor/CsvUpload")">CSVアップロード</a></p>
+        }
+    </div>

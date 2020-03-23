@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Mintea.SnippetGenerator;
 
-namespace DigitalMegaFlare.Pages.SimpleGenerate
+namespace DigitalMegaFlare.Pages
 {
     public class SnippetFactoryModel : PageModel
     {

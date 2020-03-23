@@ -19,7 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Mintea.RazorHelper;
 using RazorLight;
 
-namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
+namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 {
 
     public class ExcelUploadModel : PageModel

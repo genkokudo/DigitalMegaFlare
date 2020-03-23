@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 
-namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
+namespace DigitalMegaFlare.Pages.Botsu
 {
     public class CsvLaboModel : PageModel
     {

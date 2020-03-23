@@ -81,19 +81,6 @@ namespace DigitalMegaFlare
         public const string NoComment = "コメントなし";
 
         /// <summary>
-        /// 非公開ファイルアップロード先
-        /// </summary>
-        public const string PrivateUploadsDirectry = "PrivateUploads";
-        /// <summary>
-        /// 公開ファイルアップロード先
-        /// </summary>
-        public const string PublicUploads = "PublicUploads";
-        /// <summary>
-        /// 公開ファイルアップロード先
-        /// </summary>
-        public const string PublicUploadsDirectry = "wwwroot/" + PublicUploads;
-
-        /// <summary>
         /// アプリケーション設定：システムパラメータ初期値
         /// </summary>
         public const string DefaultParameters = "DefaultParameters";
@@ -101,37 +88,5 @@ namespace DigitalMegaFlare
         /// 初期値設定ユーザ名
         /// </summary>
         public const string DefaultParameterUserName = "default";
-        /// <summary>
-        /// システムパラメータ：分類コード：分類
-        /// </summary>
-        public const int SystemPatameterCategory = 1;
-        /// <summary>
-        /// システムパラメータ：分類コード：オンラインメモ
-        /// </summary>
-        public const int SystemPatameterMemo = 2;
-        /// <summary>
-        /// システムパラメータ：分類コード：メモ一覧の背景色
-        /// </summary>
-        public const int SystemPatameterMemoBack = 3;
-        /// <summary>
-        /// システムパラメータ：分類コード：システムモード切替
-        /// </summary>
-        public const int SystemPatameterMode = 4;
-        /// <summary>
-        /// システムパラメータ：分類コード：ゲストの投稿ロック
-        /// </summary>
-        public const int SystemPatameterModeDemo = 1;
-        /// <summary>
-        /// システムパラメータ：分類コード：システムモード切替、管理者権限登録可能
-        /// </summary>
-        public const int SystemPatameterModeRegisterAdmin = 2;
-        /// <summary>
-        /// ViewData：ゲストの投稿ロック
-        /// </summary>
-        public const string IsSubmitLocked = "IsSubmitLocked";
-        /// <summary>
-        /// ViewData：システムモード切替、管理者権限登録可能
-        /// </summary>
-        public const string IsRegisterAdmin = "IsRegisterAdmin";
     }
 }

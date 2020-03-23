@@ -1,11 +1,19 @@
 ﻿@page
 @model IndexModel
+@inject SignInManager<IdentityUser> SignInManager
 @{
-    ViewData["Title"] = "謎のサイト ～Degital Mega Flare～";
+    ViewData["Title"] = "没コーナー";
 }
 
 <div class="text-center">
     <h1>よくきたな</h1>
-    <p><a href="@Url.Content("~/SimpleGenerate")">凄いコード生成コーナー</a></p>
-    <p><a href="@Url.Content("~/Doodle")">落書き帳</a></p>
+    <p><a href="@Url.Content("~/SnippetFactory")">スニペット作成サービス</a></p>
+    <p><a href="@Url.Content("~/ExcelWorldOnline")">Excel World Online</a></p>
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+    <hr />
+        // ログインしている人だけ
+        <p><a href="@Url.Content("~/SimpleGenerate/HtmlToJquery")">没コーナー</a></p>
+    }
 </div>

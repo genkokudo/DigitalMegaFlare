@@ -24,9 +24,9 @@ else
     </environment>
     <!-- 開発系以外 -->
     <environment exclude="Development">
-    <li class="nav-item">
-        <label>アカウント作成は現在受け付けていません</label>
-    </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">アカウント作成は現在受け付けていません</a>
+        </li>
     </environment>
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>

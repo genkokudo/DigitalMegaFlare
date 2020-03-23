@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
-namespace DigitalMegaFlare.Pages.SimpleGenerate.Razor
+namespace DigitalMegaFlare.Pages.Botsu
 {
     public class CsvUploadModel : PageModel
     {

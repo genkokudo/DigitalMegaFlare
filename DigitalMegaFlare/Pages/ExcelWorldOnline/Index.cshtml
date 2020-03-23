@@ -1,0 +1,22 @@
+﻿@page
+@inject SignInManager<IdentityUser> SignInManager
+@model DigitalMegaFlare.Pages.ExcelWorldOnline.IndexModel
+@{
+    ViewData["Title"] = "Index";
+}
+
+    <p>@ViewData["result"]</p>
+
+<h1>Razor実験室</h1>
+
+<div class="text-center">
+    <p><a href="@Url.Content("~/ExcelWorldOnline/ExcelUpload")">Excelアップロード</a></p>
+
+    <p><a href="@Url.Content("~/ExcelWorldOnline/TemplateUpload")">Razorアップロードと編集</a></p>
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        // 後でログインしている人だけにする
+    }
+</div>
+
