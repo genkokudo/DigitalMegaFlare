@@ -77,6 +77,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         {
             var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
 
+            // TODO:Blob化すること
             // リストボックスの選択肢を検索する
             var list = TreeNode<string>.GetDirectoryFileList(razorFileDirectry);
 
