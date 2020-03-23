@@ -78,8 +78,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         public IActionResult OnPostDownload(long id)
         {
             var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
-            return File(new FileStream(fullpath, FileMode.Open), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data.RawFileName);
+            return File(data.Xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data.RawFileName);
         }
 
         /// <summary>
@@ -89,10 +88,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public async Task<IActionResult> OnPostDetailAsync(long id)
         {
-            var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
-
-            Data = await _mediator.Send(new ExcelUploadQuery { FilePath = fullpath });
+            Data = await _mediator.Send(new ExcelUploadQuery { Id = id });
             return await OnGetAsync();
         }
         #endregion
@@ -105,14 +101,8 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public async Task<IActionResult> OnPostDeleteAsync(long id)
         {
-            var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
-            
-            // 削除じゃなくてバックアップにする
-            var backupFilePath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.BackupFileDirectory, "excels", data.FileName);
-            System.IO.File.Move(fullpath, backupFilePath);
-
             // DBからレコードを削除
+            var data = _db.ExcelInputHistories.First(x => x.Id == id);
             _db.ExcelInputHistories.Remove(data);
             await _db.SaveChangesAsync();
 
@@ -130,12 +120,12 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         public async Task<IActionResult> OnPostGenerateAsync(long id)
         {
             var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            var fullpath = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory, data.FileName);
-            string excelName = data.FileName;
 
-            // Excelから読み込み
-            var excelDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory);
-            var excel = RazorHelper.ReadExcel(excelDirectry, excelName, true);
+            Dictionary<string, List<List<string>>> excel = null;
+            using (var stream = new MemoryStream(data.Xlsx))
+            {
+                excel = RazorHelper.ReadExcel(stream, true);
+            }
 
             // エンジンと一時出力先を作成
             var engine = new RazorLightEngineBuilder()
@@ -230,33 +220,25 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 var hostName = System.Net.Dns.GetHostEntry(ipAddress).HostName;
                 var url = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(Request);
 
-                var fileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, SystemConstants.UploadedExcelsDirectory);
-
-                using (PhysicalFileProvider provider = new PhysicalFileProvider(fileDirectry))
+                // DBに保存する
+                using (var memoryStream = new MemoryStream())
                 {
-                    // ファイル情報を取得
-                    var serverFileName = GetUniqueName() + ".xlsx";
-                    IFileInfo fileInfo = provider.GetFileInfo(serverFileName);   // ファイル情報
+                    await file.CopyToAsync(memoryStream);
+                    var xlsx = memoryStream.ToArray();
 
-                    // 指定したパスに保存する
-                    using (var stream = new FileStream(fileInfo.PhysicalPath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-
-                        // DBに登録する
-                        var data = new ExcelInputHistory {
-                            RawFileName = file.FileName,
-                            Comment = comment,
-                            FileName = serverFileName,
-                            Ip = ipAddress.ToString(),
-                            Host = hostName,
-                            InputDate = DateTime.UtcNow,
-                            IsLocked = false,
-                            Url = url
-                        };
-                        _db.ExcelInputHistories.Add(data);
-                        await _db.SaveChangesAsync();
-                    }
+                    // DBに登録する
+                    var data = new ExcelInputHistory {
+                        RawFileName = file.FileName,
+                        Comment = comment,
+                        Ip = ipAddress.ToString(),
+                        Host = hostName,
+                        InputDate = DateTime.UtcNow,
+                        IsLocked = false,
+                        Url = url,
+                        Xlsx = xlsx
+                    };
+                    _db.ExcelInputHistories.Add(data);
+                    await _db.SaveChangesAsync();
                 }
             }
 
@@ -329,7 +311,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
     public class ExcelUploadQuery : IRequest<ExcelUploadResult>
     {
         /// <summary>ファイルパス</summary> 
-        public string FilePath { get; set; }
+        public long Id { get; set; }
     }
 
     /// <summary>検索結果</summary>
@@ -348,13 +330,10 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
     /// </summary> 
     public class ExcelUploadQueryHandler : IRequestHandler<ExcelUploadQuery, ExcelUploadResult>
     {
-        /// <summary>
-        /// パス取得に使用する
-        /// </summary>
-        private readonly IWebHostEnvironment _hostEnvironment = null;
-        public ExcelUploadQueryHandler(IWebHostEnvironment hostEnvironment)
+        private readonly ApplicationDbContext _db;
+        public ExcelUploadQueryHandler(ApplicationDbContext db)
         {
-            _hostEnvironment = hostEnvironment;
+            _db = db;
         }
 
         /// <summary>
@@ -368,50 +347,65 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         {
             // ファイルの読み込み
             // 検索結果の格納
-            var result = ReadExcel(query.FilePath);
-            return await Task.FromResult(result);
+            var data = _db.ExcelInputHistories.FirstOrDefault();
+            using (var memoryStream = new MemoryStream(data.Xlsx))
+            {
+                var result = ReadExcel(memoryStream);
+                return await Task.FromResult(result);
+            }
         }
+
+        // TODO:これね、RazorHelperのReadExcelに置き換えてくれ。
+
+        ///// <summary>
+        ///// Excelを読み込む
+        ///// </summary>
+        ///// <param name="filePath">ファイルパス</param>
+        ///// <returns></returns>
+        //private ExcelUploadResult ReadExcel(string filePath)
+        //{
+        //    using (var stream = new FileStream(filePath, FileMode.Open))
+        //    {
+        //        return ReadExcel(stream);
+        //    }
+        //}
 
         /// <summary>
         /// Excelを読み込む
         /// </summary>
-        /// <param name="filePath">ディレクトリ</param>
+        /// <param name="stream"></param>
         /// <returns></returns>
-        private ExcelUploadResult ReadExcel(string filePath)
+        private ExcelUploadResult ReadExcel(Stream stream)
         {
             // ファイルの読み込み
             List<string> sheetNames = new List<string>();
             List<List<List<string>>> xlsx = new List<List<List<string>>>();
             
-            if (!string.IsNullOrWhiteSpace(filePath))
+            using (var wb = new XLWorkbook(stream))
             {
-                using (var stream = new FileStream(filePath, FileMode.Open))
-                using (var wb = new XLWorkbook(stream))
+                foreach (var ws in wb.Worksheets)
                 {
-                    foreach (var ws in wb.Worksheets)
+                    // ワークシート
+                    List<List<string>> sheet = new List<List<string>>();
+
+                    // シート名を取得
+                    sheetNames.Add(ws.Name);
+
+                    //"行数:" + ws.LastCellUsed().Address.RowNumber.ToString()
+                    //"列数:" + ws.LastCellUsed().Address.ColumnNumber.ToString()
+                    //"列記号:" + ws.LastCellUsed().Address.ColumnLetter.ToString()
+
+                    for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
                     {
-                        // ワークシート
-                        List<List<string>> sheet = new List<List<string>>();
-
-                        // シート名を取得
-                        sheetNames.Add(ws.Name);
-
-                        //"行数:" + ws.LastCellUsed().Address.RowNumber.ToString()
-                        //"列数:" + ws.LastCellUsed().Address.ColumnNumber.ToString()
-                        //"列記号:" + ws.LastCellUsed().Address.ColumnLetter.ToString()
-
-                        for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
+                        List<string> raw = new List<string>();
+                        for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
                         {
-                            List<string> raw = new List<string>();
-                            for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
-                            {
-                                raw.Add(ws.Cell(i, j).Value.ToString());
-                            }
-                            sheet.Add(raw);
+                            raw.Add(ws.Cell(i, j).Value.ToString());
                         }
-
-                        xlsx.Add(sheet);
+                        sheet.Add(raw);
                     }
+
+                    xlsx.Add(sheet);
                 }
             }
 

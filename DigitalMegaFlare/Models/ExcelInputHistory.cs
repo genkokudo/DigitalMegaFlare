@@ -26,11 +26,6 @@ namespace DigitalMegaFlare.Models
 		public string RawFileName { get; set; }
 
 		/// <summary>
-		/// サーバ上ファイル名を取得、もしくは、設定します。
-		/// </summary>
-		public string FileName { get; set; }
-
-		/// <summary>
 		/// コメントを取得、もしくは、設定します。
 		/// </summary>
 		public string Comment { get; set; }
@@ -55,34 +50,14 @@ namespace DigitalMegaFlare.Models
 		/// </summary>
 		public string Url { get; set; }
 
-		///// <summary>
-		///// Excelのバイナリデータを取得、もしくは、設定します。
-		///// </summary>
-		//public byte[] Xlsx { get; set; }
-
-		//// アップロードされたファイル（List<IFormFile> uploadFiles）
-		//using (var memoryStream = new MemoryStream())
-		//{
-		//    await uploadFiles[i].CopyToAsync(memoryStream);
-		//    document.Xlsx = memoryStream.ToArray();
-		//}
-
-		//// 任意のファイル
-		//using (var fs = new FileStream(@"C:\test.txt", System.IO.FileMode.Open, System.IO.FileAccess.Read))
-		//{
-		//    //ファイルを読み込むバイト型配列を作成する
-		//    byte[] bs = new byte[fs.Length];
-		//    //ファイルの内容をすべて読み込む
-		//    fs.Read(bs, 0, bs.Length);
-		//    //閉じる
-		//    fs.Close();
-		//}
-
-		//return File(history.Xlsx, "application/pdf", $"stampHistory{stampHistoryId}.pdf");
+		/// <summary>
+		/// Excelのバイナリデータを取得、もしくは、設定します。
+		/// </summary>
+		public byte[] Xlsx { get; set; }
 
 		public override string ToString()
 		{
-			return $"ID：{Id}, ファイル名：{FileName}, 取込日時：{InputDate}, ホスト：{Host}, IPアドレス：{Ip}, リクエスト時URL：{Url}";
+			return $"ID：{Id}, 取込日時：{InputDate}, ホスト：{Host}, IPアドレス：{Ip}, リクエスト時URL：{Url}";
 		}
 	}
 }
