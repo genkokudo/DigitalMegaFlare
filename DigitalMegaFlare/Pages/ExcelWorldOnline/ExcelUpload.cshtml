@@ -60,18 +60,24 @@
 <!-- Excelの内容を表示する -->
 <!-- タブ部分 -->
 <ul id="myTab" class="nav nav-tabs" role="tablist">
-    @for (int i = 0; i < Model.Data.SheetNames.Count; i++)
+    @if (Model.Data != null)
+    {
+    for (int i = 0; i < Model.Data.SheetNames.Count; i++)
     {
         var active = i == 0 ? " active" : "";
         <li class="nav-item">
             <a href="#sheet@(i)" id="home-tab" class="nav-link@(active)" role="tab" data-toggle="tab">@(Model.Data.SheetNames[i])</a>
         </li>
     }
+
+    }
 </ul>
 
 <!-- パネル部分 -->
 <div id="myTabContent" class="tab-content mt-3">
-    @for (int i = 0; i < Model.Data.SheetNames.Count; i++)
+    @if (Model.Data != null)
+    {
+    for (int i = 0; i < Model.Data.SheetNames.Count; i++)
     {
         var active = i == 0 ? " active" : "";
         <div id="sheet@(i)" class="tab-pane@(active)" role="tabpanel">
@@ -85,6 +91,7 @@
                 </table>
             </div>
         </div>
+    }
     }
 </div>
 

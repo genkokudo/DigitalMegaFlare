@@ -116,7 +116,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 return await OnGetAsync();
             }
 
-            await _mediator.Send(new UpdateQuery { 
+            var result = await _mediator.Send(new UpdateQuery { 
                 RazorId = RazorId,
                 MainName = main,
                 SubName = sub,
@@ -124,7 +124,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 RazorScript = razorScript
             });
 
-            ViewData["Message"] = "Message";
+            ViewData["Message"] = result.Result;
             return await OnGetAsync();
         }
     }
@@ -177,19 +177,25 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             var roots = _db.RazorFiles.Where(x => x.Parent == null).ToList();
             foreach (var root in roots)
             {
-                // rootリストに追加
-                files[string.Empty].Add(new SelectListItem(root.Name, root.Name));
+                if (!files.ContainsKey(root.Name))
+                {
+                    // rootリストに追加
+                    files[string.Empty].Add(new SelectListItem(root.Name, root.Name));
 
-                // subリスト追加
-                files.Add(root.Name, new List<SelectListItem>());
+                    // subリスト追加
+                    files.Add(root.Name, new List<SelectListItem>());
+                }
                 var subs = _db.RazorFiles.Where(x => x.Parent.Id == root.Id && x.Razor == null).ToList();
                 foreach (var sub in subs)
                 {
-                    // subリストに追加
-                    files[root.Name].Add(new SelectListItem(sub.Name, sub.Name));
+                    if (!files.ContainsKey(sub.Name))
+                    {
+                        // subリストに追加
+                        files[root.Name].Add(new SelectListItem(sub.Name, sub.Name));
 
-                    // ファイルリスト追加
-                    files.Add(sub.Name, new List<SelectListItem>());
+                        // ファイルリスト追加
+                        files.Add(sub.Name, new List<SelectListItem>());
+                    }
                     var razors = _db.RazorFiles.Where(x => x.Parent.Id == sub.Id && x.Razor != null).ToList();
                     foreach (var razor in razors)
                     {
@@ -260,11 +266,19 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             {
                 // 入力があれば新規
                 // 新規メイン
-                var mainData = new RazorFile { Name = query.MainName, Parent = null, Razor = null };
-                _db.RazorFiles.Add(mainData);
+                var mainData = _db.RazorFiles.FirstOrDefault(x => x.Name == query.MainName && x.Parent == null);
+                if (mainData == null)
+                {
+                    mainData = new RazorFile { Name = query.MainName, Parent = null, Razor = null };
+                    _db.RazorFiles.Add(mainData);
+                }
                 // 新規サブ
-                var subData = new RazorFile { Name = query.SubName, Parent = mainData, Razor = null };
-                _db.RazorFiles.Add(subData);
+                var subData = _db.RazorFiles.FirstOrDefault(x => x.Name == query.SubName && x.Parent == mainData);
+                if (subData == null)
+                {
+                    subData = new RazorFile { Name = query.SubName, Parent = mainData, Razor = null };
+                    _db.RazorFiles.Add(subData);
+                }
                 // 新規ファイル
                 var fileData = new RazorFile { Name = query.FileName, Parent = subData, Razor = razor };
                 _db.RazorFiles.Add(fileData);

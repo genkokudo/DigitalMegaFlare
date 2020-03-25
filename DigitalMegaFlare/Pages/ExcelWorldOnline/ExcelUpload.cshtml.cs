@@ -330,10 +330,10 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
     public class ExcelUploadResult
     {
         /// <summary>シート名</summary> 
-        public List<string> SheetNames { get; set; }
+        public List<string> SheetNames { get; set; } = new List<string>();
 
         /// <summary>Excelの内容</summary> 
-        public List<List<List<string>>> RawExcel { get; set; }
+        public List<List<List<string>>> RawExcel { get; set; } = new List<List<List<string>>>();
     }
 
     /// <summary> 
@@ -357,9 +357,14 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public async Task<ExcelUploadResult> Handle(ExcelUploadQuery query, CancellationToken token)
         {
+            if (query.Id == 0)
+            {
+                return new ExcelUploadResult();
+            }
+
             // ファイルの読み込み
             // 検索結果の格納
-            var data = _db.ExcelFiles.FirstOrDefault();
+            var data = _db.ExcelFiles.FirstOrDefault(x => x.Id == query.Id);
             using (var memoryStream = new MemoryStream(data.Xlsx))
             {
                 var result = ReadExcel(memoryStream);
