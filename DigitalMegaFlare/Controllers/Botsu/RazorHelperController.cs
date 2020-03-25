@@ -11,7 +11,7 @@ namespace DigitalMegaFlare.Controllers
     /// Razor実験室のコントローラーです。
     /// </summary>
     //[Authorize]
-    public class RazorController : Controller
+    public class RazorHelperController : Controller
     {
         /// <summary>
         /// パス取得に使用する
@@ -19,7 +19,7 @@ namespace DigitalMegaFlare.Controllers
         private readonly IWebHostEnvironment _hostEnvironment = null;
         private readonly string _backupFileDirectry = null;
         private readonly string _razorFileDirectry = null;
-        public RazorController(IWebHostEnvironment hostEnvironment)
+        public RazorHelperController(IWebHostEnvironment hostEnvironment)
         {
             _hostEnvironment = hostEnvironment;
             _backupFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.BackupFileDirectory, "razors");

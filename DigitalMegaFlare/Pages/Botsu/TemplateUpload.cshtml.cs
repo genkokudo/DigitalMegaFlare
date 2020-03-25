@@ -14,7 +14,7 @@ using Microsoft.Extensions.FileProviders;
 using Mintea.HtmlToDom;
 using Mintea.Extensions;
 
-namespace DigitalMegaFlare.Pages.ExcelWorldOnline
+namespace DigitalMegaFlare.Pages.ExcelWorldOnline.Botsu
 {
     /// <summary>
     /// 保存されているファイルの一覧を表示する

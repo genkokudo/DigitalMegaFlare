@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
@@ -137,6 +138,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             RazorHelper.SafeCreateDirectory(outPath);
 
             // 一時ファイル消す
+            // TODO:他で使うのでHelper行き
             DirectoryInfo target = new DirectoryInfo(outPath);
             foreach (FileInfo file in target.GetFiles())
             {
@@ -165,8 +167,18 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 model.Settings.Index = i.ToString();
 
                 // テンプレート読み込み
+                // メイン、サブ、ファイルの3つの名前でアクセス
+                var splitedPath = ((string)model.RootList[i].RazorTemplate).Trim('/').Split("/");
+                var razorData = _db.RazorFiles.First(x => x.Name == splitedPath[2] && x.Parent.Name == splitedPath[1] && x.Parent.Parent.Name == splitedPath[0]);
+
+                var template = string.Empty;
+                using (var stream = new MemoryStream(razorData.Razor))
+                {
+                    template = Encoding.UTF8.GetString(stream.ToArray());
+                }
+
                 // ファイルアクセス処理
-                var template = System.IO.File.ReadAllText(Path.Combine(razorFileDirectry, model.RootList[i].RazorTemplate));
+                //var template = System.IO.File.ReadAllText(Path.Combine(razorFileDirectry, model.RootList[i].RazorTemplate));
 
                 // ソース生成
                 // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。

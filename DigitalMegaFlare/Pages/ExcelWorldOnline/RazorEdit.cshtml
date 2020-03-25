@@ -1,0 +1,202 @@
+﻿@page
+@model DigitalMegaFlare.Pages.ExcelWorldOnline.RazorEditModel
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "RazorEdit";
+    ViewData["RootList"] = Model.Data.Files[""];
+}
+@if (ViewBag.Message != null && !string.IsNullOrWhiteSpace(ViewBag.Message.ToString()))
+{
+    <div id="TopAlertMessage" class="row d-block">
+        <div role="alert" class="alert fade show alert-success alert-dismissible">
+            @ViewBag.Message
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    </div>
+}
+@if (ViewBag.Error != null && !string.IsNullOrWhiteSpace(ViewBag.Error.ToString()))
+{
+    <div id="TopAlert" class="row d-block">
+        <div role="alert" class="alert fade show alert-danger alert-dismissible">
+            @ViewBag.Error
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    </div>
+}
+
+<h3>Razorテンプレート開発改造室</h3>
+
+<div class="form-group">
+    <form method="post">
+        <div class="row">
+            <div class="col-4">
+                <select id="SelectMainDirectory" asp-for="SelectMain" asp-items="ViewBag.RootList" class="form-control">
+                    <option value="">----- 言語・ライブラリ -----</option>
+                </select>
+            </div>
+            <div class="col-4">
+                <select id="SelectSubDirectory" asp-for="SelectSub" class="form-control">
+                    <option value="">----- 分類 -----</option>
+                </select>
+            </div>
+            <div class="col-4">
+                <select id="SelectFile" asp-for="RazorId" class="form-control">
+                    <option value="">----- ファイル -----</option>
+                </select>
+            </div>
+        </div>
+
+        <textarea id="RazorScript" name="razorScript" placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="36" style="font-size: 12px;">@ViewData["Script"]</textarea>
+
+        <div class="row">
+            <div class="col d-flex  justify-content-end">
+                <input name="mainName" type="text" placeholder="メインフォルダ名" />
+                <input name="subName" type="text" placeholder="サブフォルダ名" />
+            </div>
+            <div class="col d-flex  justify-content-end">
+                <input name="fileName" type="text" placeholder="ファイル名（拡張子なし）" />
+                <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-primary btn-sm">更新</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        var _files = @Html.Raw(JsonConvert.SerializeObject(Model.Data.Files));
+
+        // ページを全て読み込み終わった後に実行する
+        $(window).on('load', function() {
+        });
+
+        // リストボックス：メイン
+        $('#SelectMainDirectory').on('change', function () {
+            // 取り除く
+            $('#SelectSubDirectory').children().remove();
+            $('#SelectFile').children().remove();
+            $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
+            $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+
+            // 選択肢のセット
+            if (this.value != '') {
+                _files[this.value].forEach((value) => {
+                    $('#SelectSubDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+                });
+            }
+        });
+
+        // リストボックス：サブ
+        $('#SelectSubDirectory').on('change', function () {
+            // 取り除く
+            $('#SelectFile').children().remove();
+            $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+
+            // 選択肢のセット
+            if (this.value != '') {
+                _files[this.value].forEach((value) => {
+                    $('#SelectFile').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+                });
+            }
+        });
+
+        // ファイル選択時、サーバからRazorを取得
+        $('#SelectFile').on('change', function () {
+            var formData = new FormData();
+            formData.append('razorId', this.value);
+            $.ajax({
+                type: 'POST',
+                url: '/Razor/Load',
+                contentType: false,
+                processData: false,
+                data: formData
+            }).then(
+                function (data) {
+                    if (data != null && data.message != undefined) {
+                        $('#TextArea').text(data.message);
+                    }
+                },
+                function (data) {
+                    alert('ファイルが取れなかった');
+                }
+            );
+        });
+
+        //// 更新
+        //$('#Update').on('click', function () {
+        //    if ($('#SelectFile option:selected').val() == '') {
+        //        alert('更新するファイルを選択すること。');
+        //        return;
+        //    }
+        //    var formData = new FormData();
+        //    formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
+        //    formData.append('subDir', $('#SelectSubDirectory option:selected').text());
+        //    formData.append('filename', $('#SelectFile option:selected').text());
+        //    formData.append('text', $('#TextArea').val());  // text()だと、元のファイル内容になる。なぜなのかは知らない。
+        //    $.ajax({
+        //        type: 'POST',
+        //        url: '/Razor/Update',
+        //        contentType: false,
+        //        processData: false,
+        //        data: formData
+        //    }).then(
+        //        function (data) {
+        //            alert(data.message);
+        //        },
+        //        function (data) {
+        //            alert('ファイルが取れなかった');
+        //        }
+        //    );
+        //});
+
+        //// フォルダ作成
+        //$('#Folder').on('click', function () {
+        //    var formData = new FormData();
+        //    formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
+        //    formData.append('Foldername', $('#Foldername').val());
+        //    $.ajax({
+        //        type: 'POST',
+        //        url: '/Razor/Folder',
+        //        contentType: false,
+        //        processData: false,
+        //        data: formData
+        //    }).then(
+        //        function (data) {
+        //            alert(data.message);
+        //            location.reload();
+        //        },
+        //        function (data) {
+        //            alert('ファイルが取れなかった');
+        //        }
+        //    );
+        //});
+
+        //// 新規作成
+        //$('#Create').on('click', function () {
+        //    if ($('#SelectMainDirectory option:selected').val() == '' || $('#SelectSubDirectory option:selected').val() == '') {
+        //        alert('ディレクトリを選択すること。');
+        //        return;
+        //    }
+        //    var formData = new FormData();
+        //    formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
+        //    formData.append('subDir', $('#SelectSubDirectory option:selected').text());
+        //    formData.append('filename', $('#Filename').val());
+        //    formData.append('text', $('#TextArea').val());
+        //    $.ajax({
+        //        type: 'POST',
+        //        url: '/Razor/Create',
+        //        contentType: false,
+        //        processData: false,
+        //        data: formData
+        //    }).then(
+        //        function (data) {
+        //            alert(data.message);
+        //            location.reload();
+        //        },
+        //        function (data) {
+        //            alert('ファイルが取れなかった');
+        //        }
+        //    );
+        //});
+
+    </script>
+}
