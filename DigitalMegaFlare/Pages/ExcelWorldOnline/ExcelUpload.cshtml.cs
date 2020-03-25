@@ -61,9 +61,9 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         public async Task<IActionResult> OnPostLockAsync(long id)
         {
             // DBに登録する
-            var data = _db.ExcelInputHistories.First(x => x.Id == id);
+            var data = _db.ExcelFiles.First(x => x.Id == id);
             data.IsLocked = !data.IsLocked;
-            _db.ExcelInputHistories.Update(data);
+            _db.ExcelFiles.Update(data);
             await _db.SaveChangesAsync();
 
             // 再検索
@@ -77,7 +77,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public IActionResult OnPostDownload(long id)
         {
-            var data = _db.ExcelInputHistories.First(x => x.Id == id);
+            var data = _db.ExcelFiles.First(x => x.Id == id);
             return File(data.Xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data.RawFileName);
         }
 
@@ -102,8 +102,8 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         public async Task<IActionResult> OnPostDeleteAsync(long id)
         {
             // DBからレコードを削除
-            var data = _db.ExcelInputHistories.First(x => x.Id == id);
-            _db.ExcelInputHistories.Remove(data);
+            var data = _db.ExcelFiles.First(x => x.Id == id);
+            _db.ExcelFiles.Remove(data);
             await _db.SaveChangesAsync();
 
             // 再検索
@@ -119,7 +119,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public async Task<IActionResult> OnPostGenerateAsync(long id)
         {
-            var data = _db.ExcelInputHistories.First(x => x.Id == id);
+            var data = _db.ExcelFiles.First(x => x.Id == id);
 
             Dictionary<string, List<List<string>>> excel = null;
             using (var stream = new MemoryStream(data.Xlsx))
@@ -227,7 +227,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                     var xlsx = memoryStream.ToArray();
 
                     // DBに登録する
-                    var data = new ExcelInputHistory {
+                    var data = new ExcelFile {
                         RawFileName = file.FileName,
                         Comment = comment,
                         Ip = ipAddress.ToString(),
@@ -237,7 +237,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                         Url = url,
                         Xlsx = xlsx
                     };
-                    _db.ExcelInputHistories.Add(data);
+                    _db.ExcelFiles.Add(data);
                     await _db.SaveChangesAsync();
                 }
             }
@@ -268,7 +268,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
     public class ExcelListResult
     {
         /// <summary>検索した情報</summary> 
-        public ExcelInputHistory[] Histories { get; set; }
+        public ExcelFile[] Histories { get; set; }
     }
 
     /// <summary> 
@@ -294,7 +294,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         public async Task<ExcelListResult> Handle(ExcelListQuery query, CancellationToken token)
         {
             // DB検索
-            var histories = _db.ExcelInputHistories.ToArray();
+            var histories = _db.ExcelFiles.ToArray();
 
             // 検索結果の格納
             var result = new ExcelListResult
@@ -347,7 +347,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         {
             // ファイルの読み込み
             // 検索結果の格納
-            var data = _db.ExcelInputHistories.FirstOrDefault();
+            var data = _db.ExcelFiles.FirstOrDefault();
             using (var memoryStream = new MemoryStream(data.Xlsx))
             {
                 var result = ReadExcel(memoryStream);

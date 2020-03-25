@@ -1,0 +1,54 @@
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+
+namespace DigitalMegaFlare.Entities
+{
+	/// <summary>
+	/// サンプルモデルです。
+	/// </summary>
+	public class SampleEntity
+	{
+		/// <summary>
+		/// IDを取得、もしくは、設定します。
+		/// </summary>
+		[Key]
+		public long SampleId { get; set; }
+		
+		/// <summary>
+		/// 名前Aを取得、もしくは、設定します。
+		/// </summary>
+		[StringLength(50)]
+		public string NameA { get; set; }
+		
+		/// <summary>
+		/// 点数Bを取得、もしくは、設定します。
+		/// </summary>
+		public int ScoreB { get; set; }
+		/// <summary>
+		/// 並び順を取得、もしくは、設定します。
+		/// </summary>
+		public int Order { get; set; }
+		
+		/// <summary>
+		/// 初期値を作成します。
+		/// </summary>
+		/// <returns></returns>
+		internal static SampleEntity[] GetInitialData()
+		{
+			var result = new List<SampleEntity>();
+			var order = 0;
+			for (int i = 0; i < .Count(); i++)
+			{
+				order++;
+				result.Add(new SampleEntity()
+				{
+					Order = order,
+					NameA = [i],
+					ScoreB = [i],
+				});
+			}
+			return result.ToArray();
+		}
+	}
+}

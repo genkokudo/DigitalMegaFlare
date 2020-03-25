@@ -7,7 +7,7 @@ namespace DigitalMegaFlare.Models
 	/// <summary>
 	/// Excel読み込み履歴です。
 	/// </summary>
-	public class ExcelInputHistory
+	public class ExcelFile
 	{
 		/// <summary>
 		/// IDを取得、もしくは、設定します。
