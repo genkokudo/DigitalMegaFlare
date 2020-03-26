@@ -24,13 +24,21 @@
     </div>
 }
 
-<h3>Razorテンプレート開発改造室</h3>
+
 
 <div class="form-group">
     <form method="post">
         <div class="row">
+            <div class="col-8">
+                <h3>Razorテンプレート開発改造室</h3>
+            </div>
             <div class="col-4">
-                <select id="SelectMainDirectory" asp-for="SelectMain" asp-items="ViewBag.RootList" class="form-control">
+                <button id="Delete" type="submit" asp-page-handler="Delete" class="btn btn-danger btn-sm float-right">削除</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <select id="SelectMainDirectory" asp-for="SelectMain" class="form-control">
                     <option value="">----- 言語・ライブラリ -----</option>
                 </select>
             </div>
@@ -52,8 +60,6 @@
             <div class="col d-flex  justify-content-end">
                 <input name="mainName" type="text" placeholder="メインフォルダ名" />
                 <input name="subName" type="text" placeholder="サブフォルダ名" />
-            </div>
-            <div class="col d-flex  justify-content-end">
                 <input name="fileName" type="text" placeholder="ファイル名（拡張子なし）" />
                 <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-primary btn-sm">更新</button>
             </div>
@@ -67,6 +73,9 @@
 
         // ページを全て読み込み終わった後に実行する
         $(window).on('load', function() {
+            _files[''].forEach((value) => {
+                $('#SelectMainDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+            });
         });
 
         // リストボックス：メイン
@@ -121,82 +130,15 @@
             );
         });
 
-        //// 更新
-        //$('#Update').on('click', function () {
-        //    if ($('#SelectFile option:selected').val() == '') {
-        //        alert('更新するファイルを選択すること。');
-        //        return;
-        //    }
-        //    var formData = new FormData();
-        //    formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
-        //    formData.append('subDir', $('#SelectSubDirectory option:selected').text());
-        //    formData.append('filename', $('#SelectFile option:selected').text());
-        //    formData.append('text', $('#TextArea').val());  // text()だと、元のファイル内容になる。なぜなのかは知らない。
-        //    $.ajax({
-        //        type: 'POST',
-        //        url: '/Razor/Update',
-        //        contentType: false,
-        //        processData: false,
-        //        data: formData
-        //    }).then(
-        //        function (data) {
-        //            alert(data.message);
-        //        },
-        //        function (data) {
-        //            alert('ファイルが取れなかった');
-        //        }
-        //    );
-        //});
 
-        //// フォルダ作成
-        //$('#Folder').on('click', function () {
-        //    var formData = new FormData();
-        //    formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
-        //    formData.append('Foldername', $('#Foldername').val());
-        //    $.ajax({
-        //        type: 'POST',
-        //        url: '/Razor/Folder',
-        //        contentType: false,
-        //        processData: false,
-        //        data: formData
-        //    }).then(
-        //        function (data) {
-        //            alert(data.message);
-        //            location.reload();
-        //        },
-        //        function (data) {
-        //            alert('ファイルが取れなかった');
-        //        }
-        //    );
-        //});
+        // <button id="BtnA" class="btn btn-success btn-sm" key="1">Sample</button>
+        $('#Delete').on('click', function (e) {
+            if (!window.confirm('本当にいいんですね？')) {
+                // キャンセル時の処理
+                e.preventDefault();
+            }
+        });
 
-        //// 新規作成
-        //$('#Create').on('click', function () {
-        //    if ($('#SelectMainDirectory option:selected').val() == '' || $('#SelectSubDirectory option:selected').val() == '') {
-        //        alert('ディレクトリを選択すること。');
-        //        return;
-        //    }
-        //    var formData = new FormData();
-        //    formData.append('mainDir', $('#SelectMainDirectory option:selected').text());
-        //    formData.append('subDir', $('#SelectSubDirectory option:selected').text());
-        //    formData.append('filename', $('#Filename').val());
-        //    formData.append('text', $('#TextArea').val());
-        //    $.ajax({
-        //        type: 'POST',
-        //        url: '/Razor/Create',
-        //        contentType: false,
-        //        processData: false,
-        //        data: formData
-        //    }).then(
-        //        function (data) {
-        //            alert(data.message);
-        //            location.reload();
-        //        },
-        //        function (data) {
-        //            alert('ファイルが取れなかった');
-        //        }
-        //    );
-        //});
 
     </script>
 }

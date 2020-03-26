@@ -125,6 +125,14 @@
 
         }
 
+        // <button id="BtnA" class="btn btn-success btn-sm" key="1">Sample</button>
+        $('input[value=削除]').on('click', function (e) {
+            if (!window.confirm('本当にいいんですね？')) {
+                // キャンセル時の処理
+                e.preventDefault();
+            }
+        });
+
         // 上記の処理は重いので完全に終わった後に実行する
         $(function () {
         });

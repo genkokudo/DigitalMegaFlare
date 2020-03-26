@@ -127,7 +127,119 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             ViewData["Message"] = result.Result;
             return await OnGetAsync();
         }
+
+        /// <summary>
+        /// 削除ボタンの処理
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> OnPostDeleteAsync()
+        {
+            // メインを決定する
+            if (string.IsNullOrWhiteSpace(SelectMain))
+            {
+                ViewData["Error"] = "何も消さなくて良いのだな？";
+                return await OnGetAsync();
+            }
+
+            var result = await _mediator.Send(new DeleteQuery
+            {
+                RazorId = RazorId,
+                MainName = SelectMain,
+                SubName = SelectSub
+            });
+
+            ViewData["Message"] = result.Result;
+            return await OnGetAsync();
+        }
     }
+
+
+    /// <summary>検索条件</summary>
+    public class DeleteQuery : IRequest<DeleteResult>
+    {
+        public string RazorId { get; set; }
+        public string MainName { get; set; }
+        public string SubName { get; set; }
+    }
+
+    /// <summary>検索結果</summary>
+    public class DeleteResult
+    {
+        /// <summary>検索した情報</summary> 
+        public string Result { get; set; }
+    }
+
+    /// <summary> 
+    /// 検索ハンドラ 
+    /// DeleteQueryをSendすると動作し、DeleteResultを返す 
+    /// </summary> 
+    public class DeleteQueryHandler : IRequestHandler<DeleteQuery, DeleteResult>
+    {
+        private readonly ApplicationDbContext _db;
+
+        public DeleteQueryHandler(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        /// <summary>
+        /// 検索の方法を定義する
+        /// IRequestHandlerで実装することになっている
+        /// </summary>
+        /// <param name="query">検索条件</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<DeleteResult> Handle(DeleteQuery query, CancellationToken token)
+        {
+            var message = string.Empty;
+            // DB検索
+            if (!string.IsNullOrWhiteSpace(query.RazorId))
+            {
+                var target = _db.RazorFiles.FirstOrDefault(x => x.Id == long.Parse(query.RazorId));
+                _db.RazorFiles.Remove(target);
+                await _db.SaveChangesAsync();
+                message = "削除した";
+            }
+            else if (!string.IsNullOrWhiteSpace(query.SubName))
+            {
+                // 子要素が残ってたらNGにする
+                var target = _db.RazorFiles.FirstOrDefault(x => x.Name == query.SubName && x.Razor == null && x.Parent != null);
+                if(_db.RazorFiles.FirstOrDefault(x => x.Parent.Id == target.Id) == null)
+                {
+                    _db.RazorFiles.Remove(target);
+                    await _db.SaveChangesAsync();
+                    message = "削除した";
+                }
+                else
+                {
+                    message = "子がいるから削除しなかった";
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(query.MainName))
+            {
+                // 子要素が残ってたらNGにする
+                var target = _db.RazorFiles.FirstOrDefault(x => x.Name == query.MainName && x.Parent == null);
+                if (_db.RazorFiles.FirstOrDefault(x => x.Parent.Id == target.Id) == null)
+                {
+                    _db.RazorFiles.Remove(target);
+                    await _db.SaveChangesAsync();
+                    message = "削除した";
+                }
+                else
+                {
+                    message = "子がいるから削除しなかった";
+                }
+            }
+
+            // 検索結果の格納
+            var result = new DeleteResult
+            {
+                Result = message
+            };
+            return await Task.FromResult(result);
+        }
+    }
+
 
     #region GetFiles
     /// <summary>検索条件</summary>
@@ -215,7 +327,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
     }
     #endregion
 
-
+    #region Update
     /// <summary>検索条件</summary>
     public class UpdateQuery : IRequest<UpdateResult>
     {
@@ -300,5 +412,6 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             return await Task.FromResult(result);
         }
     }
+    #endregion
 
 }
