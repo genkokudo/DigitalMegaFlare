@@ -131,7 +131,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                           .DisableEncoding()
                           .Build();
             string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
-            RazorHelper.DeleteDirectory(outPath);
+            RazorHelper.DeleteDirectory(outPath, true); // linuxだとパーミッションが消えてダウンロードできなくなるので最初のフォルダは残す
             RazorHelper.SafeCreateDirectory(outPath);
 
             // 一時ファイル消す

@@ -26,7 +26,7 @@ namespace DigitalMegaFlare.Controllers
         /// <summary>
         /// ファイル読み込み
         /// </summary>
-        /// <param name="filepath"></param>
+        /// <param name="razorId"></param>
         /// <returns></returns>
         public ActionResult Load(string razorId)
         {

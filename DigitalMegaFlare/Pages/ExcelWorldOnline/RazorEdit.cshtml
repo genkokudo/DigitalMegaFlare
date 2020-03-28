@@ -114,7 +114,7 @@
             formData.append('razorId', this.value);
             $.ajax({
                 type: 'POST',
-                url: '/Razor/Load',
+                url: '../Razor/Load',   // 相対パスであることに注意。動かしたらできなくなるぞ。
                 contentType: false,
                 processData: false,
                 data: formData
