@@ -31,7 +31,7 @@ namespace @(Model.Settings.Name).Infrastructure.Database
 			if(mod.IsMaster){
 			@:
 			@:// @(mod.Comment)の初期化
-			@:context.@(mod.Name).AddRange(@(mod.Name).GetInitialData());
+			@:context.@(mod.MultipleName).AddRange(@(mod.Name).GetInitialData());
 			@:context.SaveChanges();
 			}
 			}

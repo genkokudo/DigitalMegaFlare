@@ -31,10 +31,22 @@ namespace @(Model.Settings.Name).Entities
 		@:public @(field.Type) @(field.Name) { get; set; }
 		}
 		@if(Mod.IsMaster){
+		@:
 		@:/// <summary>
 		@:/// 並び順を取得、もしくは、設定します。
 		@:/// </summary>
 		@:public int Order { get; set; }
+		if(Mod.FieldList.Count > 0){
+			// フィールドがある場合
+			// 初期値があるか
+			var existValues = false;
+			foreach(var field in Mod.FieldList){
+				if(field.ValueList.Count > 0){
+					existValues = true;
+				}
+			}
+			if(existValues){
+			// 初期値があれば初期値作成メソッドを作成する
 		@:
 		@:/// <summary>
 		@:/// 初期値を作成します。
@@ -66,7 +78,6 @@ namespace @(Model.Settings.Name).Entities
 		@:		order++;
 		@:		result.Add(new @(Mod.Name)Entity()
 		@:		{
-					// TODO:Orderは自動的にやってくれるようにすること
 		@:			Order = order,
 			foreach(var field in Mod.FieldList){
 		@:			@(field.Name) = @(field.MultipleCamelFieldName)[i],
@@ -75,5 +86,7 @@ namespace @(Model.Settings.Name).Entities
 		@:	}
 		@:	return result.ToArray();
 		@:}
+			}
+		}
 }	}
 }
