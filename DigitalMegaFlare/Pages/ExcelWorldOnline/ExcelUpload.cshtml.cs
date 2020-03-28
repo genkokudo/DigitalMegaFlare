@@ -131,6 +131,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                           .DisableEncoding()
                           .Build();
             string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
+            RazorHelper.DeleteDirectory(outPath);
             RazorHelper.SafeCreateDirectory(outPath);
 
             // 一時ファイル消す
@@ -187,7 +188,10 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 // VisualStudioが勘違いを起こすのでファイル末尾に"_"をつける
                 var outFileName = $"{resultFilename}_";
                 outFileList.Add(outFileName);
-                System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), result, System.Text.Encoding.UTF8);
+
+                // ディレクトリ分けしたZipを作成する
+                RazorHelper.SafeCreateDirectory(Path.Combine(outPath, Path.GetDirectoryName(outFileName)));
+                System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), result, Encoding.UTF8);
 
                 ViewData["Message"] = result;
             }
@@ -202,10 +206,9 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 {
                     archive.CreateEntryFromFile(
                         Path.Combine(outPath, $"{item}"),
-                        $"{item.TrimEnd('_')}",
-                        //$"{excelName}/item.TrimEnd('_')}", // ディレクトリ分けする場合はこう書く
+                        $"{item.TrimEnd('_')}", // ここでスラッシュを入れると、ディレクトリ分けしたZipが作成できる
                         CompressionLevel.NoCompression
-                        );
+                    );
                 }
             }
 
