@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Mintea.RazorHelper;
+using MinteaCore.RazorHelper;
 using RazorLight;
 
 namespace DigitalMegaFlare.Pages.ExcelWorldOnline

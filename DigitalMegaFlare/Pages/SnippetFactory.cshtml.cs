@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using DigitalMegaFlare.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Mintea.SnippetGenerator;
+using MinteaCore.SnippetGenerator;
 
 namespace DigitalMegaFlare.Pages
 {

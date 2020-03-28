@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.FileProviders;
-using Mintea.HtmlToDom;
-using Mintea.Extensions;
+using MinteaCore.HtmlToDom;
+using MinteaCore.Extensions;
 
 namespace DigitalMegaFlare.Pages.ExcelWorldOnline.Botsu
 {
