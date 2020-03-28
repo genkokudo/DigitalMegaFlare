@@ -15,11 +15,9 @@ namespace @(Model.Settings.Name).Infrastructure.Database
 		}
 
 		@foreach(var mod in Model.RootList){
-		if(mod.MultipleName != ""){
 		@:// @(mod.Comment)
-		@:public DbSet<@(mod.Name)> @(mod.MultipleName) { get; set; }
+		@:public DbSet<@(mod.Name)> @(mod.PascalPlural) { get; set; }
 		@:
-		}
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)

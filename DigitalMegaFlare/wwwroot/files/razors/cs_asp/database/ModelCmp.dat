@@ -61,8 +61,8 @@ namespace @(Model.Settings.Name).Entities
 				var quotation = field.Type == "string" ? "\"" : "";
 				var comma = "";
 				if(field.ValueList.Count > 0){
-					listName = field.MultipleCamelFieldName;
-					var initialValues = $"var {field.MultipleCamelFieldName} = new {field.Type}[] " + "{ ";
+					listName = field.CamelPlural;
+					var initialValues = $"var {field.CamelPlural} = new {field.Type}[] " + "{ ";
 						foreach(var value in field.ValueList){
 							initialValues += comma + quotation + value.Value + quotation;
 							comma = ", ";
@@ -80,7 +80,7 @@ namespace @(Model.Settings.Name).Entities
 		@:		{
 		@:			Order = order,
 			foreach(var field in Mod.FieldList){
-		@:			@(field.Name) = @(field.MultipleCamelFieldName)[i],
+		@:			@(field.Name) = @(field.CamelPlural)[i],
 			}
 		@:		});
 		@:	}

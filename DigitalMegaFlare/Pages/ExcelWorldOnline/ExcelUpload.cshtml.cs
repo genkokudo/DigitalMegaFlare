@@ -1,4 +1,13 @@
-﻿using System;
+﻿using DigitalMegaFlare.Data;
+using DigitalMegaFlare.Models;
+using MediatR;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using MinteaCore.RazorHelper;
+using RazorLight;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -6,19 +15,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ClosedXML.Excel;
-using DigitalMegaFlare.Data;
-using DigitalMegaFlare.Models;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using MinteaCore.RazorHelper;
-using RazorLight;
 
 namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 {
@@ -372,21 +368,6 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             }
         }
 
-        // TODO:これね、RazorHelperのReadExcelに置き換えてくれ。
-
-        ///// <summary>
-        ///// Excelを読み込む
-        ///// </summary>
-        ///// <param name="filePath">ファイルパス</param>
-        ///// <returns></returns>
-        //private ExcelUploadResult ReadExcel(string filePath)
-        //{
-        //    using (var stream = new FileStream(filePath, FileMode.Open))
-        //    {
-        //        return ReadExcel(stream);
-        //    }
-        //}
-
         /// <summary>
         /// Excelを読み込む
         /// </summary>
@@ -397,33 +378,16 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             // ファイルの読み込み
             List<string> sheetNames = new List<string>();
             List<List<List<string>>> xlsx = new List<List<List<string>>>();
-            
-            using (var wb = new XLWorkbook(stream))
+
+            var excel = RazorHelper.ReadExcel(stream, false);
+
+            foreach (var sheet in excel.Values)
             {
-                foreach (var ws in wb.Worksheets)
-                {
-                    // ワークシート
-                    List<List<string>> sheet = new List<List<string>>();
-
-                    // シート名を取得
-                    sheetNames.Add(ws.Name);
-
-                    //"行数:" + ws.LastCellUsed().Address.RowNumber.ToString()
-                    //"列数:" + ws.LastCellUsed().Address.ColumnNumber.ToString()
-                    //"列記号:" + ws.LastCellUsed().Address.ColumnLetter.ToString()
-
-                    for (int i = 1; i <= ws.LastCellUsed().Address.RowNumber; i++)
-                    {
-                        List<string> raw = new List<string>();
-                        for (int j = 1; j <= ws.LastCellUsed().Address.ColumnNumber; j++)
-                        {
-                            raw.Add(ws.Cell(i, j).Value.ToString());
-                        }
-                        sheet.Add(raw);
-                    }
-
-                    xlsx.Add(sheet);
-                }
+                xlsx.Add(sheet);
+            }
+            foreach (var sheetName in excel.Keys)
+            {
+                sheetNames.Add(sheetName);
             }
 
             return new ExcelUploadResult
@@ -432,31 +396,6 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 SheetNames = sheetNames
             };
         }
-
-        #region Excelファイル作成（使ってない）
-        ///// <summary>
-        ///// Excelファイル作成
-        ///// </summary>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //private async Task<XLWorkbook> BuildExcelFile(int id)
-        //{
-        //    var t = Task.Run(() =>
-        //    {
-        //        // ブック作成
-        //        var wb = new XLWorkbook();
-        //        // シート作成
-        //        var ws = wb.AddWorksheet("Sheet1");
-        //        // 最初のセルに値を設定
-        //        ws.FirstCell().SetValue(id);
-        //        // 保存
-        //        //wb.SaveAs("HelloWorld.xlsx");
-        //        return wb;
-        //    });
-        //    return await t;
-        //}
-
-        #endregion
 
     }
     #endregion

@@ -40,8 +40,6 @@
 
 
   <ItemGroup>
-    <Folder Include="wwwroot\bkfiles\razors\cs_asp\noname\" />
-    <Folder Include="wwwroot\bkfiles\excels\" />
     <Folder Include="wwwroot\files\excels\" />
     <Folder Include="wwwroot\files\razors\react\crud\" />
     <Folder Include="wwwroot\files\uploadedExcels\" />
