@@ -29,6 +29,7 @@
     <table class="table">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>元ファイル名</th>
                 <th>日時(UTC)</th>
                 <th>コメント</th>
@@ -43,6 +44,7 @@
             @foreach (var item in Model.History.Histories)
             {
             <tr>
+                <td>@Html.DisplayFor(modelItem => item.Id)</td>
                 <td>@Html.DisplayFor(modelItem => item.RawFileName)</td>
                 <td>@Html.DisplayFor(modelItem => item.InputDate)</td>
                 <td>@Html.DisplayFor(modelItem => item.Comment)</td>
