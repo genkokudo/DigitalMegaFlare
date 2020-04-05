@@ -129,17 +129,17 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 model = RazorHelper.CreateOutModel(excel);
 
                 var generatedSource = new Dictionary<string, string>();
-                for (int i = 0; i < model.Out.Count; i++)
+                for (int i = 0; i < model.RootList.Count; i++)
                 {
                     // 変数入れる
                     model.General.Index = i.ToString();
 
                     // テンプレート読み込み
-                    var template = GetTemplate((string)model.Out[i].RazorTemplate);
+                    var template = GetTemplate((string)model.RootList[i].RazorTemplate);
 
                     // ソース生成
                     // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
-                    generatedSource.Add((string)model.Out[i].Name, await engine.CompileRenderStringAsync($"{model.Out[i].Name}", template, model));
+                    generatedSource.Add((string)model.RootList[i].Name, await engine.CompileRenderStringAsync($"{model.RootList[i].Name}Out", template, model));
                 }
 
                 // Outが無くても空ディクショナリを返す
@@ -195,7 +195,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             }
 
             // 外部生成
-            var outInput =　await GenerateOut(excel, engine);
+            var outInput = await GenerateOut(excel, engine);
 
             // Modelの作成
             dynamic model;
@@ -276,7 +276,8 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 
                 // ソース生成
                 // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
-                generatedSource.Add(await engine.CompileRenderStringAsync($"{model.RootList[i].Name}", template, model));
+                var name = $"{model.RootList[i].Name}";
+                generatedSource.Add(await engine.CompileRenderStringAsync(name, template, model));
             }
 
             return generatedSource;
