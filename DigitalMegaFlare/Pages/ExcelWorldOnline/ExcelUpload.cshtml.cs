@@ -16,7 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// OutはRootList、OutListはListとしてmodelに格納しないと互換性がなくなってしまう
+// TODO:OutはRootList、OutListはListとしてmodelに格納しないと互換性がなくなってしまう
 
 namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 {
