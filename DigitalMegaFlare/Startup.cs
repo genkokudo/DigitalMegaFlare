@@ -23,8 +23,6 @@ namespace DigitalMegaFlare
 {
     public class Startup
     {
-        //public const string RootsName = "default";
-        //public const string RootsTemplate = "{controller=Home}/{action=Index}/{id?}";
         /// <summary>
         /// 環境変数を取得するのに使用
         /// </summary>
@@ -90,13 +88,6 @@ namespace DigitalMegaFlare
 
             // SignalRを使用する
             services.AddSignalR();
-
-            //// TODO:いるかどうか分からない。いらなかったらノートの「設定ファイルの読み込み」ページを直す。
-            //// DIするのに必要？RazorPagesでは多分いらない
-            //services.AddMvc();
-            // RazorPagesを使用する設定
-            // RazorPagesの設定なので、Pagesフォルダじゃないと適用されない。
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             //構成情報から、DefaultParametersクラスへバインド
             services.Configure<DefaultParameters>(this.Configuration.GetSection(SystemConstants.DefaultParameters));

@@ -16,9 +16,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+// OutはRootList、OutListはListとしてmodelに格納しないと互換性がなくなってしまう
+
 namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 {
-
     public class ExcelUploadModel : PageModel
     {
         /// <summary>
@@ -109,6 +110,67 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         #endregion
 
         #region 生成ボタン
+
+        #region 外部生成
+        /// <summary>
+        /// ソースを生成する
+        /// 外部用
+        /// </summary>
+        /// <param name="excel">Excel</param>
+        /// <param name="engine">エンジン</param>
+        /// <returns>[Name][生成結果]：Outが無かったらNull</returns>
+        private async Task<Dictionary<string, string>> GenerateOut(Dictionary<string, List<List<string>>> excel, RazorLightEngine engine)
+        {
+            if (excel.ContainsKey("Out"))
+            {
+                // Outの入力を作成する
+                dynamic model;
+
+                model = RazorHelper.CreateOutModel(excel);
+
+                var generatedSource = new Dictionary<string, string>();
+                for (int i = 0; i < model.Out.Count; i++)
+                {
+                    // 変数入れる
+                    model.General.Index = i.ToString();
+
+                    // テンプレート読み込み
+                    var template = GetTemplate((string)model.Out[i].RazorTemplate);
+
+                    // ソース生成
+                    // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
+                    generatedSource.Add((string)model.Out[i].Name, await engine.CompileRenderStringAsync($"{model.Out[i].Name}", template, model));
+                }
+
+                // Outが無くても空ディクショナリを返す
+                return generatedSource;
+            }
+            return null;
+        }
+
+        #region GetTemplate
+        /// <summary>
+        /// DBからテンプレート取得
+        /// </summary>
+        /// <param name="path">cs_asp/crud/ListBox</param>
+        /// <returns></returns>
+        private string GetTemplate(string path)
+        {
+            // メイン、サブ、ファイルの3つの名前でアクセス
+            var splitedPath = path.Trim('/').Split("/");
+            var razorData = _db.RazorFiles.First(x => x.Name == splitedPath[2] && x.Parent.Name == splitedPath[1] && x.Parent.Parent.Name == splitedPath[0]);
+            var template = string.Empty;
+            using (var stream = new MemoryStream(razorData.Razor))
+            {
+                template = Encoding.UTF8.GetString(stream.ToArray());
+            }
+            return template;
+        }
+
+        #endregion
+
+        #endregion
+
         /// <summary>
         /// 生成ボタン
         /// </summary>
@@ -116,6 +178,14 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         /// <returns></returns>
         public async Task<IActionResult> OnPostGenerateAsync(long id)
         {
+            // エンジンを生成
+            var engine = new RazorLightEngineBuilder()
+                          .UseEmbeddedResourcesProject(typeof(Program))
+                          .UseMemoryCachingProvider()
+                          .DisableEncoding()
+                          .Build();
+
+            // 対象のExcelを読み込む
             var data = _db.ExcelFiles.First(x => x.Id == id);
 
             Dictionary<string, List<List<string>>> excel = null;
@@ -124,76 +194,48 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
                 excel = RazorHelper.ReadExcel(stream, true);
             }
 
-            // エンジンと一時出力先を作成
-            var engine = new RazorLightEngineBuilder()
-                          .UseEmbeddedResourcesProject(typeof(Program))
-                          .UseMemoryCachingProvider()
-                          .DisableEncoding()
-                          .Build();
-            string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
-            RazorHelper.DeleteDirectory(outPath, true); // linuxだとパーミッションが消えてダウンロードできなくなるので最初のフォルダは残す
-            RazorHelper.SafeCreateDirectory(outPath);
-
-            // 一時ファイル消す
-            // TODO:他で使うのでHelper行き
-            DirectoryInfo target = new DirectoryInfo(outPath);
-            foreach (FileInfo file in target.GetFiles())
-            {
-                file.Delete();
-            }
+            // 外部生成
+            var outInput =　await GenerateOut(excel, engine);
 
             // Modelの作成
             dynamic model;
             try
             {
-                model = RazorHelper.CreateModel(excel);
+                model = RazorHelper.CreateModel(excel, outInput);
             }
             catch (Exception e)
             {
                 ViewData["Error"] = e.Message;
                 return Page();
             }
+            // 一時出力先を作成
+            string outPath = Path.Combine(_hostEnvironment.WebRootPath, "temp");
+            RazorHelper.DeleteDirectory(outPath, true); // linuxだとパーミッションが消えてダウンロードできなくなるので最初のフォルダは残す
+            RazorHelper.SafeCreateDirectory(outPath);
+            // 一時ファイル消す
+            RazorHelper.DeleteFiles(outPath);
 
             // リストを読んでソース生成する
             // ↓この"RootList"は動的に変えられないので、ファイル生成の一覧となるListシートの名前は"RootList"固定にする。
             var outFileList = new List<string>();
             var razorFileDirectry = Path.Combine(_hostEnvironment.WebRootPath, SystemConstants.FileDirectory, "razors");
+
+            // 各ソース生成
+            List<dynamic> generatedSource = await GenerateSource(model, engine);
+
             for (int i = 0; i < model.RootList.Count; i++)
             {
-                // 変数入れる
-                model.Settings.Index = i.ToString();
-
-                // テンプレート読み込み
-                // メイン、サブ、ファイルの3つの名前でアクセス
-                var splitedPath = ((string)model.RootList[i].RazorTemplate).Trim('/').Split("/");
-                var razorData = _db.RazorFiles.First(x => x.Name == splitedPath[2] && x.Parent.Name == splitedPath[1] && x.Parent.Parent.Name == splitedPath[0]);
-
-                var template = string.Empty;
-                using (var stream = new MemoryStream(razorData.Razor))
-                {
-                    template = Encoding.UTF8.GetString(stream.ToArray());
-                }
-
-                // ファイルアクセス処理
-                //var template = System.IO.File.ReadAllText(Path.Combine(razorFileDirectry, model.RootList[i].RazorTemplate));
-
-                // ソース生成
-                // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
-                var result = await engine.CompileRenderStringAsync($"{model.RootList[i].Name}", template, model);
-
                 // ファイル名生成
                 var resultFilename = await engine.CompileRenderStringAsync($"{model.RootList[i].Name}Name", model.RootList[i].OutputFileName, new { model.RootList[i].Name });
 
-                // 生成したファイルを一時保存（今回はやっつけで。本当は人によって一時フォルダ名変えるべき。）
+                // 生成したファイルを一時保存
                 // VisualStudioが勘違いを起こすのでファイル末尾に"_"をつける
                 var outFileName = $"{resultFilename}_";
                 outFileList.Add(outFileName);
 
                 // ディレクトリ分けしたZipを作成する
                 RazorHelper.SafeCreateDirectory(Path.Combine(outPath, Path.GetDirectoryName(outFileName)));
-                System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), result, Encoding.UTF8);
-
-                ViewData["Message"] = result;
+                System.IO.File.WriteAllText(Path.Combine(outPath, outFileName), generatedSource[i], Encoding.UTF8);
             }
 
             // 圧縮ファイルの準備
@@ -213,6 +255,31 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             }
 
             return File(new FileStream(outFilePath, FileMode.Open), "application/zip", $"{data.RawFileName}.zip");
+        }
+
+        /// <summary>
+        /// ソースを生成する
+        /// </summary>
+        /// <param name="model">モデル</param>
+        /// <param name="engine">エンジン</param>
+        /// <returns></returns>
+        private async Task<List<dynamic>> GenerateSource(dynamic model, RazorLightEngine engine)
+        {
+            var generatedSource = new List<dynamic>();
+            for (int i = 0; i < model.RootList.Count; i++)
+            {
+                // 変数入れる
+                model.General.Index = i.ToString();
+
+                // テンプレート読み込み
+                var template = GetTemplate((string)model.RootList[i].RazorTemplate);
+
+                // ソース生成
+                // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
+                generatedSource.Add(await engine.CompileRenderStringAsync($"{model.RootList[i].Name}", template, model));
+            }
+
+            return generatedSource;
         }
         #endregion
 
