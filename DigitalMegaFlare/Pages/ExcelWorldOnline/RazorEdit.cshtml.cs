@@ -103,6 +103,10 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             {
                 sub = subName;
             }
+            else
+            {
+                sub = SelectSub.Split('#')[1];
+            }
             if (string.IsNullOrWhiteSpace(sub))
             {
                 ViewData["Error"] = "サブの名前が分からん。";
@@ -145,7 +149,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             {
                 RazorId = RazorId,
                 MainName = SelectMain,
-                SubName = SelectSub
+                SubName = SelectSub?.Split('#')[1]
             });
 
             ViewData["Message"] = result.Result;
