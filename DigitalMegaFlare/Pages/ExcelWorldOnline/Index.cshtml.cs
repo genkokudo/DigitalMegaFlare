@@ -11,6 +11,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
     /// <summary>
     /// Razor実験室
     /// </summary>
+    [Authorize]
     public class IndexModel : PageModel
     {
         public void OnGet()
