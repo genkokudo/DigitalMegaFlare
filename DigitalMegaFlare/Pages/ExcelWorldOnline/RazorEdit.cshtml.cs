@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using DigitalMegaFlare.Data;
+﻿using DigitalMegaFlare.Data;
+using DigitalMegaFlare.Models;
 using MediatR;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.FileProviders;
-using MinteaCore.HtmlToDom;
-using MinteaCore.Extensions;
-using DigitalMegaFlare.Models;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 {
@@ -29,6 +24,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         // なのでBindPropertyする。
 
         #endregion
+
         /// <summary>
         /// 選択した言語・ライブラリ
         /// 未選択はnull

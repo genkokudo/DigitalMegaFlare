@@ -17,7 +17,6 @@ namespace DigitalMegaFlare.Pages
         [BindProperty]
         public string Output { get; set; }
 
-        // TODO:クッキー
         private const string CAuthor = "Author";
         public IActionResult OnGetAsync()
         {
