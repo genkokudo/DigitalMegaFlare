@@ -220,9 +220,9 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 
                 for (int i = 0; i < model.RootList.Count; i++)
                 {
-                    // ファイル名生成
+                    // ファイル名生成（絶対かぶらないように）
                     var resultFilename = await engine.CompileRenderStringAsync(
-                        $"{model.RootList[i].Name}Name",
+                        $"{model.RootList[i].Name}Name{i}",
                         model.RootList[i].OutputFileName,
                         new
                         {
@@ -290,8 +290,16 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 
                 // ソース生成
                 // 同じキーを指定すると登録したスクリプトを使いまわすことが出来るが、何故か2回目以降Unicodeにされるので毎回違うキーを使う。
-                var name = $"{model.RootList[i].Name}";
-                generatedSource.Add(await engine.CompileRenderStringAsync(name, template, model));
+                var name = $"{model.RootList[i].Name + i}";
+                try
+                {
+                    generatedSource.Add(await engine.CompileRenderStringAsync(name, template, model));
+                }
+                catch (Exception e)
+                {
+                    // 生成で何かエラーがあったらここ。
+                    throw e;
+                }
             }
 
             return generatedSource;
