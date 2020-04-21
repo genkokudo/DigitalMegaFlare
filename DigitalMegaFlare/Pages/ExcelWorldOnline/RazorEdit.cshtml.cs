@@ -47,10 +47,12 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
         public string RazorId { get; set; }
 
         private readonly IMediator _mediator;
+        private readonly ApplicationDbContext _db;
 
-        public RazorEditModel(IMediator mediator)
+        public RazorEditModel(IMediator mediator, ApplicationDbContext db)
         {
             _mediator = mediator;
+            _db = db;
         }
 
         /// <summary>
@@ -150,6 +152,22 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
 
             ViewData["Message"] = result.Result;
             return await OnGetAsync();
+        }
+
+        /// <summary>
+        /// ダウンロードボタンの処理
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> OnPostDownloadAsync()
+        {
+            if (string.IsNullOrWhiteSpace(RazorId))
+            {
+                ViewData["Error"] = "どれが欲しいのかわからへん";
+                return await OnGetAsync();
+            }
+
+            var data = _db.RazorFiles.First(x => x.Id == long.Parse(RazorId));
+            return File(data.Razor, "text/plain", data.Name + ".razor");
         }
     }
 

@@ -29,11 +29,12 @@
 <div class="form-group">
     <form method="post">
         <div class="row">
-            <div class="col-8">
+            <div class="col-6">
                 <h3>Razorテンプレート開発改造室</h3>
             </div>
-            <div class="col-4">
+            <div class="col-6">
                 <button id="Delete" type="submit" asp-page-handler="Delete" class="btn btn-danger btn-sm float-right">削除</button>
+                <button id="Download" type="submit" asp-page-handler="Download" class="btn btn-primary btn-sm float-right mr-5">ダウンロード</button>
             </div>
         </div>
         <div class="row">
@@ -110,24 +111,26 @@
 
         // ファイル選択時、サーバからRazorを取得
         $('#SelectFile').on('change', function () {
-            var formData = new FormData();
-            formData.append('razorId', this.value);
-            $.ajax({
-                type: 'POST',
-                url: '../Razor/Load',   // 相対パスであることに注意。動かしたらできなくなるぞ。
-                contentType: false,
-                processData: false,
-                data: formData
-            }).then(
-                function (data) {
-                    if (data != null && data.message != undefined) {
-                        $('#RazorScript').text(data.message);
+            if (this.value != '') {
+                var formData = new FormData();
+                formData.append('razorId', this.value);
+                $.ajax({
+                    type: 'POST',
+                    url: '../Razor/Load',   // 相対パスであることに注意。動かしたらできなくなるぞ。
+                    contentType: false,
+                    processData: false,
+                    data: formData
+                }).then(
+                    function (data) {
+                        if (data != null && data.message != undefined) {
+                            $('#RazorScript').text(data.message);
+                        }
+                    },
+                    function (data) {
+                        alert('ファイルが取れなかった');
                     }
-                },
-                function (data) {
-                    alert('ファイルが取れなかった');
-                }
-            );
+                );
+            }
         });
 
 
@@ -138,7 +141,5 @@
                 e.preventDefault();
             }
         });
-
-
     </script>
 }
