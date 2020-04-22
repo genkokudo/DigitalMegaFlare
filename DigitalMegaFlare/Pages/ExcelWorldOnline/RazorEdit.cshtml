@@ -33,8 +33,10 @@
                 <h3>Razorテンプレート開発改造室</h3>
             </div>
             <div class="col-6">
+                <a href="./ExcelUpload" class="btn btn-primary btn-sm">Excel画面へ</a>
                 <button id="Delete" type="submit" asp-page-handler="Delete" class="btn btn-danger btn-sm float-right">削除</button>
-                <button id="Download" type="submit" asp-page-handler="Download" class="btn btn-primary btn-sm float-right mr-5">ダウンロード</button>
+                <button id="Download" type="submit" asp-page-handler="Download" class="btn btn-success btn-sm float-right mr-5">ダウンロード</button>
+                <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-warning btn-sm float-right mr-5">更新</button>
             </div>
         </div>
         <div class="row">
@@ -62,7 +64,7 @@
                 <input name="mainName" type="text" placeholder="メインフォルダ名" />
                 <input name="subName" type="text" placeholder="サブフォルダ名" />
                 <input name="fileName" type="text" placeholder="ファイル名（拡張子なし）" />
-                <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-primary btn-sm">更新</button>
+                <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-warning btn-sm">更新</button>
             </div>
         </div>
     </form>
