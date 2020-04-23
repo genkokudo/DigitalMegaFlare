@@ -1,0 +1,45 @@
+@{
+    var Index = int.Parse(Model.General.Index); 
+    var Mod = Model.RootList[Index];
+}
+namespace @(Model.Settings.Name).Models.Master
+{
+    /// <summary>
+    /// @(Mod.Comment)の画面モデルです。
+    /// </summary>
+    public class @(Mod.Pascal)Model
+    {
+        /// <summary>
+        /// IDを取得、もしくは、設定します。
+        /// </summary>
+        public long @(Mod.Pascal)Id { get; set; }
+        @foreach(var field in Mod.FieldList){
+        @* フィールドのリスト *@
+        @:
+        @:/// <summary>
+        @:/// @(field.Comment)を取得、もしくは、設定します。
+        @:/// </summary>
+        @:public @(field.Type) @(field.Pascal) { get; set; }
+        }
+        
+        /// <summary>
+        /// 並び順を取得、もしくは、設定します。
+        /// </summary>
+        public int Order { get; set; }
+        
+        /// <summary>
+        /// 更新回数を取得、もしくは、設定します。
+        /// </summary>
+        public long Version { get; set; }
+        
+        /// <summary>
+        /// 更新日を取得、もしくは、設定します。
+        /// </summary>
+        public string UpdatedDate { get; set; }
+        
+        /// <summary>
+        /// 更新者を取得、もしくは、設定します。
+        /// </summary>
+        public string UpdatedBy { get; set; }
+    }
+}

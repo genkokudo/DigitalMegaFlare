@@ -1,0 +1,533 @@
+@{
+    var Index = int.Parse(Model.General.Index); 
+    var Mod = Model.RootList[Index];
+    
+    var fieldLists = "";
+    var fieldList = "";
+    var fieldLogList = "";
+    var fieldTargetLogList = "";
+    var fieldArgs = "";
+    foreach(var field in Mod.FieldList){
+        fieldLists += $", List<{field.Type}> {field.CamelPlural}";
+        fieldList += $", {field.Type} {field.Camel}";
+        fieldLogList += " " + field.Comment + "：{query." + field.Pascal + "}";
+        fieldTargetLogList += " " + field.Comment + "：{target." + field.Pascal + "}";
+        fieldArgs += $"{field.CamelPlural}[i], ";
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoMapper;
+using CmmpWeb.Entities;
+using CmmpWeb.Infrastructure.Database;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using CmmpWeb.Models.Master;
+
+namespace CmmpWeb.Controllers.Master
+{
+    /// <summary>
+    /// @(Mod.Comment)マスタメンテ
+    /// </summary>
+    [Authorize(Roles = "Administrator")]
+    public class @(Mod.Pascal)Controller : ControllerBase
+    {
+        private readonly ILogger<@(Mod.Pascal)Controller> _logger;
+        private readonly IMediator _mediator;
+        private readonly CmmpNetDbContext _db;
+
+        public @(Mod.Pascal)Controller(ILogger<@(Mod.Pascal)Controller> logger, IMediator mediator, CmmpNetDbContext db)
+        {
+            _logger = logger;
+            _mediator = mediator;
+            _db = db;
+        }
+
+        #region List
+        /// <summary>
+        /// @(Mod.Pascal)/GetList
+        /// @(Mod.Comment)一覧を取得します。
+        /// （PostListTableAsyncが兼ねるので、直接画面から呼ぶ必要がなくなった）
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Get@(Mod.Pascal)ListResult> GetListAsync()
+        {
+            _logger.LogInformation("GetList");
+            var @(Model.Settings.IdCamel) = long.Parse(User.FindFirst("@(Model.Settings.Id)").Value);
+            return await _mediator.Send(new Get@(Mod.Pascal)ListQuery { @(Model.Settings.Id) = @(Model.Settings.IdCamel) });
+        }
+
+        /// <summary>
+        /// @(Mod.Pascal)/PostListTable
+        /// @(Mod.Comment)一覧をDBに反映します。
+        /// また、最新の状態を検索して結果を画面に返します。
+        /// </summary>
+        /// <param name="ids">0:追加</param>
+        /// <returns></returns>
+        public async Task<Get@(Mod.Pascal)ListResult> PostListTableAsync(List<long> ids@(fieldLists), List<int> isEdited, List<int> orders, List<long> versions)
+        {
+            _logger.LogInformation("PostList");
+            var userId = long.Parse(User.FindFirst("UserId").Value);
+            var userName = User.FindFirst("UserName").Value;
+
+            // トランザクション
+            await _db.BeginTransactionAsync();
+
+            var results = new List<string>();
+            var errors = new List<string>();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                try
+                {
+                    if (isEdited[i] == 0 || ids[i] == 0 && isEdited[i] == 1)
+                    {
+                        // 編集していない
+                        // 追加したけど削除
+                        continue;
+                    }
+
+                    ObjectResult tempResult;
+
+                    if (isEdited[i] == 1)
+                    {
+                        // 削除
+                        tempResult = await PostDeleteAsync(ids[i], versions[i]) as ObjectResult;
+                    }
+                    else if (ids[i] == 0)
+                    {
+                        // 追加
+                        tempResult = await PostCreateAsync(orders[i], @(fieldArgs)userId, userName) as ObjectResult;
+                    }
+                    else
+                    {
+                        // 更新
+                        tempResult = await PostUpdateAsync(ids[i], @(fieldArgs)orders[i], versions[i], userId, userName) as ObjectResult;
+                    }
+                    // 実行結果
+                    if (tempResult.StatusCode == 200)
+                    {
+                        results.Add((tempResult.Value as dynamic).Message);
+                    }
+                    else
+                    {
+                        errors.Add((tempResult.Value as dynamic).Message);
+                    }
+                }
+                catch (DbUpdateException e)
+                {
+                    if (e.InnerException.Message.Contains("duplicate"))
+                    {
+                        errors.Add($"既に他のユーザが更新したため、処理がキャンセルされました。\n画面をリロードしてやり直してください。");
+                    }
+                    else if (e.InnerException.Message.Contains("conflicted"))
+                    {
+                        errors.Add($"このマスタを使用しているスタンプがあるため削除できません。");
+                    }
+                    else if (e.InnerException.Message.Contains("would be truncated"))
+                    {
+                        errors.Add($"文字数が多すぎたため更新できませんでした。");
+                    }
+                    else
+                    {
+                        errors.Add($"想定されていないエラーが発生しました:{e}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError("@(Mod.Pascal)マスタメンテで想定外のエラーが発生。");
+                    _logger.LogError(e.ToString());
+                    errors.Add($"想定されていないエラーが発生しました:{e}");
+                }
+            }
+
+            if (errors.Count == 0)
+            {
+                // エラーなし
+                await _db.CommitTransactionAsync();
+
+                var result = await GetListAsync();
+                result.Message = string.Join('\n', results);
+                _logger.LogInformation(result.Message);
+                return result;
+            }
+            else
+            {
+                // エラーあり
+                _db.RollbackTransaction();
+
+                var result = await GetListAsync();
+                result.Error = string.Join('\n', errors);
+                _logger.LogInformation(result.Error);
+                return result;
+            }
+        }
+        #endregion
+
+        #region Create
+        /// <summary>
+        /// @(Mod.Comment)を作成します。
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> PostCreateAsync(int order@(fieldList), long userId, string userName)
+        {
+            _logger.LogInformation($"PostCreate");
+            var @(Model.Settings.IdCamel) = long.Parse(User.FindFirst("@(Model.Settings.Id)").Value);
+
+            var result = await _mediator.Send(new Post@(Mod.Pascal)CreateQuery
+            {
+                @foreach(var field in Mod.FieldList){
+                @:@(field.Pascal) = @(field.Camel),
+                }
+                @(Model.Settings.Id) = @(Model.Settings.IdCamel),
+                Order = order,
+                UserId = userId,
+                UserName = userName
+            });
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { Message = $"登録に失敗しました。{string.Join(',', result.Messages) }" });
+            }
+            return Ok(new { Message = $"登録が完了しました。{string.Join(',', result.Messages) }" });
+        }
+        #endregion
+
+        #region Edit
+
+        #region Post
+        /// <summary>
+        /// @(Mod.Comment)を更新します。
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> PostUpdateAsync(long id@(fieldList), int order, long version, long userId, string userName)
+        {
+            _logger.LogInformation($"PostEdit");
+
+            // 対象レコード以外の並び順の修正に必要
+            var @(Model.Settings.IdCamel) = long.Parse(User.FindFirst("@(Model.Settings.Id)").Value);
+
+            var result = await _mediator.Send(new Post@(Mod.Pascal)UpdateQuery
+            {
+                Id = id,
+                @foreach(var field in Mod.FieldList){
+                @:@(field.Pascal) = @(field.Camel),
+                }
+                @(Model.Settings.Id) = @(Model.Settings.IdCamel),
+                Order = order,
+                Version = version,
+                UserId = userId,
+                UserName = userName
+            });
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { Message = $"更新に失敗しました。{string.Join(',', result.Messages) }" });
+            }
+            return Ok(new { Message = $"更新が完了しました。{string.Join(',', result.Messages) }" });
+        }
+        #endregion
+
+        #endregion
+
+        #region Delete
+        /// <summary>
+        /// @(Mod.Pascal)/PostDelete
+        /// 削除します。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<ActionResult> PostDeleteAsync(long id, long version)
+        {
+            _logger.LogInformation($"PostDelete");
+
+            var result = await _mediator.Send(new PostDelete@(Mod.Pascal)Query
+            {
+                Id = id,
+                Version = version
+            });
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { Message = $"削除に失敗しました。{string.Join(',', result.Messages) }" });
+            }
+            return Ok(new { Message = $"削除が完了しました。{string.Join(',', result.Messages) }" });
+        }
+        #endregion
+
+    }
+
+    #region List
+    /// <summary>共通の処理結果</summary>
+    public class Post@(Mod.Pascal)Result
+    {
+        /// <summary>結果</summary> 
+        public bool IsSuccess { get; set; } = true;
+
+        /// <summary>メッセージ</summary> 
+        public List<string> Messages { get; set; } = new List<string>();
+    }
+
+    #region Get
+    /// <summary>検索条件</summary>
+    public class Get@(Mod.Pascal)ListQuery : IRequest<Get@(Mod.Pascal)ListResult>
+    {
+        public long @(Model.Settings.Id) { get; set; }
+    }
+
+    /// <summary>検索結果</summary>
+    public class Get@(Mod.Pascal)ListResult
+    {
+        /// <summary>検索した情報</summary> 
+        public @(Mod.Pascal)Model[] @(Mod.PascalPlural) { get; set; }
+        /// <summary>画面に表示する処理結果</summary> 
+        public string Message { get; set; }
+        /// <summary>画面に表示するエラー</summary> 
+        public string Error { get; set; }
+    }
+
+    /// <summary> 
+    /// @(Mod.Comment)一覧検索ハンドラ
+    /// </summary> 
+    public class Get@(Mod.Pascal)ListQueryHandler : IRequestHandler<Get@(Mod.Pascal)ListQuery, Get@(Mod.Pascal)ListResult>
+    {
+        private readonly CmmpNetDbContext _db;
+        private readonly IMapper _mapper;
+
+        public Get@(Mod.Pascal)ListQueryHandler(CmmpNetDbContext db, IMapper mapper)
+        {
+            _db = db;
+            _mapper = mapper;
+        }
+
+        /// <summary>
+        /// 検索の方法を定義する
+        /// </summary>
+        /// <param name="query">検索条件</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<Get@(Mod.Pascal)ListResult> Handle(Get@(Mod.Pascal)ListQuery query, CancellationToken token)
+        {
+            // DB検索
+            var @(Mod.CamelPlural) = _db.@(Mod.PascalPlural).Where(x => x.@(Model.Settings.Id) == query.@(Model.Settings.Id)).OrderBy(x => x.Order).AsNoTracking().ToArray();
+
+            // 検索結果の格納
+            var result = new Get@(Mod.Pascal)ListResult
+            {
+                @(Mod.PascalPlural) = _mapper.Map<@(Mod.Pascal)Entity[], @(Mod.Pascal)Model[]>(@(Mod.CamelPlural))
+            };
+            return await Task.FromResult(result);
+        }
+    }
+    #endregion
+
+    #endregion
+
+    #region Create
+
+    #region Post
+    /// <summary>処理条件</summary>
+    public class Post@(Mod.Pascal)CreateQuery : IRequest<Post@(Mod.Pascal)Result>
+    {
+        @foreach(var field in Mod.FieldList){
+        @:public @(field.Type) @(field.Pascal) { get; set; }
+        }
+        public int Order { get; set; }
+        public long @(Model.Settings.Id) { get; set; }
+        public long UserId { get; set; }
+        public string UserName { get; set; }
+    }
+
+    /// <summary> 
+    /// ハンドラ 
+    /// Post@(Mod.Pascal)CreateQueryをSendすると動作し、@(Mod.Pascal)CreateResultを返す 
+    /// </summary> 
+    public class Post@(Mod.Pascal)CreateQueryHandler : IRequestHandler<Post@(Mod.Pascal)CreateQuery, Post@(Mod.Pascal)Result>
+    {
+        private readonly CmmpNetDbContext _db;
+
+        public Post@(Mod.Pascal)CreateQueryHandler(CmmpNetDbContext db)
+        {
+            _db = db;
+        }
+
+        /// <summary>
+        /// 処理を定義する
+        /// </summary>
+        /// <param name="query">処理条件</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<Post@(Mod.Pascal)Result> Handle(Post@(Mod.Pascal)CreateQuery query, CancellationToken token)
+        {
+            var result = new Post@(Mod.Pascal)Result();
+
+            try
+            {
+                // 登録
+                _db.@(Mod.PascalPlural).Add(new @(Mod.Pascal)Entity
+                {
+                    @foreach(var field in Mod.FieldList){
+                    @:@(field.Pascal) = query.@(field.Pascal),
+                    }
+                    @(Model.Settings.Id) = query.@(Model.Settings.Id),
+                    Order = query.Order,
+                    UpdatedUserId = query.UserId,
+                    UpdatedBy = query.UserName,
+                    UpdatedDate = DateTime.UtcNow
+                });
+                await _db.SaveChangesAsync();
+
+                result.Messages.Add($"[表示順：{query.Order}@(fieldLogList)]");
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+    }
+    #endregion
+
+    #endregion
+
+    #region Update
+
+    #region Post
+    /// <summary>検索条件</summary>
+    public class Post@(Mod.Pascal)UpdateQuery : IRequest<Post@(Mod.Pascal)Result>
+    {
+        public long Id { get; set; }
+        @foreach(var field in Mod.FieldList){
+        @:public @(field.Type) @(field.Pascal) { get; set; }
+        }
+        public int Order { get; set; }
+        public long @(Model.Settings.Id) { get; set; }
+        public long Version { get; set; }
+        public long UserId { get; set; }
+        public string UserName { get; set; }
+    }
+
+    /// <summary> 
+    /// ハンドラ
+    /// </summary> 
+    public class Post@(Mod.Pascal)UpdateQueryHandler : IRequestHandler<Post@(Mod.Pascal)UpdateQuery, Post@(Mod.Pascal)Result>
+    {
+        private readonly CmmpNetDbContext _db;
+
+        public Post@(Mod.Pascal)UpdateQueryHandler(CmmpNetDbContext db)
+        {
+            _db = db;
+        }
+
+        /// <summary>
+        /// 処理の方法を定義する
+        /// </summary>
+        /// <param name="query">検索条件</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<Post@(Mod.Pascal)Result> Handle(Post@(Mod.Pascal)UpdateQuery query, CancellationToken token)
+        {
+
+            var result = new Post@(Mod.Pascal)Result();
+
+            try
+            {
+                // データ作成
+                var target = _db.@(Mod.PascalPlural).FirstOrDefault(x => x.@(Mod.Pascal)Id == query.Id && x.Version == query.Version);
+                if (target == null)
+                {
+                    result.IsSuccess = false;
+                    result.Messages.Add($"既に他のユーザが更新したため、処理がキャンセルされました。\n画面をリロードしてやり直してください。");
+                    return await Task.FromResult(result);
+                }
+
+                var message = $"更新前[表示順：{target.Order}@(fieldTargetLogList)]";
+
+                // 更新
+                @foreach(var field in Mod.FieldList){
+                @:target.@(field.Pascal) = query.@(field.Pascal);
+                }
+                target.UpdatedDate = DateTime.UtcNow;
+                target.UpdatedUserId = query.UserId;
+                target.UpdatedBy = query.UserName;
+                target.Order = query.Order;
+                target.Version++;
+
+                await _db.SaveChangesAsync();
+
+                result.Messages.Add($"{message} 更新後[表示順：{query.Order}@(fieldLogList)]");
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+    }
+
+    #endregion
+
+    #endregion
+
+    #region Delete
+    /// <summary>検索条件</summary>
+    public class PostDelete@(Mod.Pascal)Query : IRequest<Post@(Mod.Pascal)Result>
+    {
+        public long Id { get; set; }
+        public long Version { get; set; }
+    }
+
+    /// <summary> 
+    /// ハンドラ 
+    /// PostDelete@(Mod.Pascal)QueryをSendすると動作し、PostDelete@(Mod.Pascal)Resultを返す 
+    /// </summary> 
+    public class PostDelete@(Mod.Pascal)QueryHandler : IRequestHandler<PostDelete@(Mod.Pascal)Query, Post@(Mod.Pascal)Result>
+    {
+        private readonly CmmpNetDbContext _db;
+
+        public PostDelete@(Mod.Pascal)QueryHandler(CmmpNetDbContext db)
+        {
+            _db = db;
+        }
+
+        /// <summary>
+        /// 処理の方法を定義する
+        /// IRequestHandlerで実装することになっている
+        /// </summary>
+        /// <param name="query">検索条件</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<Post@(Mod.Pascal)Result> Handle(PostDelete@(Mod.Pascal)Query query, CancellationToken token)
+        {
+            var result = new Post@(Mod.Pascal)Result();
+            try
+            {
+                // 削除
+                var target = _db.@(Mod.PascalPlural).FirstOrDefault(x => x.@(Mod.Pascal)Id == query.Id && x.Version == query.Version);
+                if (target == null)
+                {
+                    result.IsSuccess = false;
+                    result.Messages.Add($"既に他のユーザが更新したため、処理がキャンセルされました。\n画面をリロードしてやり直してください。");
+                    return await Task.FromResult(result);
+                }
+                _db.@(Mod.PascalPlural).Remove(target);
+                await _db.SaveChangesAsync();
+
+                result.Messages.Add($"[表示順：{target.Order}@(fieldTargetLogList)]");
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+    }
+
+    #endregion
+
+}

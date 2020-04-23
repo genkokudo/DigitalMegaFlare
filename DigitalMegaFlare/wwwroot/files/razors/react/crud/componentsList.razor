@@ -1,0 +1,175 @@
+@{
+    var Index = int.Parse(Model.General.Index); 
+    var Mod = Model.RootList[Index];
+}
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { List@(Mod.Pascal)Module, ListState } from '../../../store/master/@(Mod.Camel)/List';
+import { Container, Row, Input } from 'reactstrap';
+
+/*
+ * @(Mod.Comment)一覧画面の表示
+ */
+const List@(Mod.Pascal) = () => {
+    // hooksセットアップ
+    const dispatch = useDispatch();
+
+    // state取得
+    const currentState: ListState = useSelector((state: any) => state.list@(Mod.Pascal));
+
+    // 初回および、サーバ送信データ作成時に実行
+    useEffect(() => {
+        // ここでfetchする
+        fetch('/@(Mod.Pascal)/PostListTable', {
+            method: 'post',
+            body: currentState.formData,
+            credentials: 'include'
+        }).then(function (response) {
+            if (response.status !== 200) {
+                alert(`サーバ処理で何か失敗したようです`);
+            }
+            // JSONメッセージを取り出す
+            response.json().then(function (data) {
+                // コールバック結果を画面に反映させる
+                dispatch(List@(Mod.Pascal)Module.actions.setData(data));
+            }).catch(function (err) {
+                alert(`レスポンスはありませんでした: ${err}`);
+            });
+        }).catch(function (err) {
+            alert(`error: ${err}`);
+        });
+    }, [currentState.postTrigger]); // 第2引数の値が変化すると実行
+
+    // データ一覧表示
+    function body() {
+        var list = [];
+
+        // 件数分繰り返し
+        for (var i in currentState.@(Mod.CamelPlural)) {
+            const @(Mod.Camel) = currentState.@(Mod.CamelPlural)[i];
+            const isDel = currentState.@(Mod.CamelPlural)[i].isDeleted;
+            const isEdit = currentState.@(Mod.CamelPlural)[i].isEditMode;
+            const isEdited = currentState.@(Mod.CamelPlural)[i].isEdited;
+            const isNg = currentState.@(Mod.CamelPlural)[i].isNgInput;
+            const index = i;
+            let tbodyClass = isEdited ? 'table-success' : '';
+            tbodyClass = isEdit ? 'table-warning' : tbodyClass;
+            tbodyClass = isDel ? 'table-danger' : tbodyClass;
+            list.push(
+                <tbody key={`tbody_${i}`} className={tbodyClass}>
+                    {/* 1行 */}
+                    <tr key={`tr_${i}`}>
+                        {/* 編集項目（必須入力） */}
+                        <td key={`td_order_${i}`}>
+                            {!isEdit && <p className={'input-number'}>{@(Mod.Camel).order}</p>}
+                            {isEdit && <input type="number" className={'input-number'} value={@(Mod.Camel).order} onChange={(e) => dispatch(List@(Mod.Pascal)Module.actions.editOrder({ id: index, order: Number(e.currentTarget.value) }))} />}
+                        </td>
+                        @foreach(var field in Mod.FieldList){
+                        // 数値型かどうか判定
+                        var type = field.Type.Trim('?');
+                        var isNumeric = (type == "int" || type == "double" || type == "decimal" || type == "float");
+                            if(isNumeric){
+                                // 数値
+                                var numstr = "";
+                                var step = 1.0;
+                                if(field.MaxLength != ""){
+                                    var max = 1.0;
+                                    var maxLength = int.Parse(field.MaxLength);
+                                    for(int i = 0; i < maxLength; i++){
+                                        max *= 10.0;
+                                    }
+                                    max -= 1.0;
+                                    
+                                    if(field.Decimal != ""){
+                                        var decimalLength = int.Parse(field.Decimal);
+                                        for(int i = 0; i < decimalLength; i++){
+                                            max /= 10.0;
+                                            step /= 10.0;
+                                        }
+                                    }
+                                    var min = max * (-1);
+                                    
+                                    numstr += $"max=\"{max}\" ";
+                                    numstr += $"min=\"{min}\" ";
+                                }
+                                numstr += $"step=\"{step}\" ";
+                                
+                        @:<td key={`td_@(field.Snake)_${i}`}>
+                        @:    {!isEdit && <p>{@(Mod.Camel).@(field.Camel)}</p>}
+                        @:    {isEdit && <input type="number" @(numstr)value={@(Mod.Camel).@(field.Camel)} onChange={(e) => dispatch(List@(Mod.Pascal)Module.actions.edit@(field.Pascal)({ id: index, text: Number(e.currentTarget.value) }))} />}
+                        @:</td>
+                            }else{
+                            // 文字列
+                            var maxLength = "";
+                            if(field.MaxLength != ""){
+                                maxLength = "maxLength={" + field.MaxLength + "} ";
+                            }
+                        @:<td key={`td_@(field.Snake)_${i}`}>
+                        @:    {!isEdit && <p>{@(Mod.Camel).@(field.Camel)}</p>}
+                        @:    {isEdit && <input type="text" @(maxLength)value={@(Mod.Camel).@(field.Camel)} onChange={(e) => dispatch(List@(Mod.Pascal)Module.actions.edit@(field.Pascal)({ id: index, text: e.currentTarget.value }))} />}
+                        @:</td>
+                            }
+                        }
+                        <td key={`td_updated_by_${i}`}>
+                            <p>{@(Mod.Camel).updatedBy}</p>
+                        </td>
+                        <td key={`td_updated_date_${i}`}>
+                            <p>{@(Mod.Camel).updatedDate}</p>
+                        </td>
+                        {/* ボタン */}
+                        <td key={`td_edit_${i}`}>
+                            {!isEdit && <button className={'btn btn-sm btn-primary'} value={i.toString()} onClick={() => dispatch(List@(Mod.Pascal)Module.actions.editLine(index))} disabled={isDel}>編集</button>}
+                            {isEdit && <button className={'btn btn-sm btn-primary'} value={i.toString()} onClick={() => dispatch(List@(Mod.Pascal)Module.actions.editLine(index))} disabled={ isDel || isNg }>完了</button>}
+                        </td>
+                        <td key={`td_delete_${i}`}>
+                            {!isDel && <button className={'btn btn-sm btn-danger'} onClick={() => dispatch(List@(Mod.Pascal)Module.actions.removeLine(index))}>削除</button>}
+                            {isDel && <button className={'btn btn-sm btn-primary'} onClick={() => dispatch(List@(Mod.Pascal)Module.actions.removeLine(index))}>取消</button>}
+                        </td>
+                        <td key={`td_error_${i}`}>
+                            {!isDel && <p className={'text-danger'}>{currentState.@(Mod.CamelPlural)[i].errorMessage}</p>}
+                        </td>
+                    </tr>
+                </tbody>
+            );
+        }
+        return list;
+    }
+
+    return (
+        <Container>
+            {
+                <React.Fragment>
+                    {/* メッセージ */}
+                    <Row><span className={'text-return'}>{currentState.message}</span></Row>
+                    <Row><span className={'text-danger text-return'}>{currentState.error}</span></Row>
+                    {/* ボタン */}
+                    <button className={'btn btn-primary'} onClick={() => dispatch(List@(Mod.Pascal)Module.actions.addLine())}>新規追加</button>
+                    {/* 一覧 */}
+                    <table className={'table table-striped table-hover table-responsive'}>
+                        <thead>
+                            <tr>
+                                <th>表示順</th>
+                                @foreach(var field in Mod.FieldList){
+                                @:<th>@(field.Comment)</th>
+                                }
+                                <th>更新者</th>
+                                <th>更新日時</th>
+                                <th>編集</th>
+                                <th>削除</th>
+                            </tr>
+                        </thead>
+                        {body()}
+                    </table>
+                    <button className={'btn btn-warning'} disabled={!currentState.isEdited} onClick={() => {
+                        if (window.confirm('以上の内容で更新します。よろしいですか？')) {
+                            // formdata作ってstateに持たせる、formdataが変化するとuseEffectが反応してPostする。
+                            dispatch(List@(Mod.Pascal)Module.actions.makeFormData());
+                        }
+                    }}>確定</button>
+                </React.Fragment>
+            }
+        </Container>
+    );
+};
+
+export default List@(Mod.Pascal);

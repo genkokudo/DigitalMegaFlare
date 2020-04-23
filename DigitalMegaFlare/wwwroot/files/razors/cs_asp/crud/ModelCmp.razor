@@ -1,0 +1,119 @@
+@{
+	var Index = int.Parse(Model.General.Index); 
+	var Mod = Model.RootList[Index];
+}
+using AutoMapper;
+using CmmpWeb.Models.Master;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using TimeZoneConverter;
+
+namespace @(Model.Settings.Name).Entities
+{
+	/// <summary>
+	/// @(Mod.Comment)です。
+	/// </summary>
+	public class @(Mod.Name)Entity : EntityBase
+	{
+		/// <summary>
+		/// IDを取得、もしくは、設定します。
+		/// </summary>
+		[Key]
+		public long @(Mod.Pascal)Id { get; set; }
+
+		/// <summary>
+		/// @(Model.Settings.IdComment)を取得、もしくは、設定します。
+		/// </summary>
+		public long @(Model.Settings.Id) { get; set; }
+		@foreach(var field in Mod.FieldList){
+		@* フィールドのリスト *@
+		var attribute = string.Empty;
+		if(field.Type == "string" && !string.IsNullOrWhiteSpace(field.MaxLength)){
+			attribute = $"\r\n\t\t[StringLength({field.MaxLength})]";
+		}
+		if(field.Type == "decimal" && !string.IsNullOrWhiteSpace(field.MaxLength)){
+			attribute = $"\r\n\t\t[Column(TypeName = \"decimal({field.MaxLength}, {field.Decimal})\")]";
+		}
+		@:
+		@:/// <summary>
+		@:/// @(field.Comment)を取得、もしくは、設定します。
+		@:/// </summary>@(attribute)
+		@:public @(field.Type) @(field.Name) { get; set; }
+		}
+		@if(Mod.IsMaster){
+		@:
+		@:/// <summary>
+		@:/// 並び順を取得、もしくは、設定します。
+		@:/// </summary>
+		@:public int Order { get; set; }
+		if(Mod.FieldList.Count > 0){
+			// フィールドがある場合
+			// 初期値があるか
+			var existValues = false;
+			foreach(var field in Mod.FieldList){
+				if(field.ValueList.Count > 0){
+					existValues = true;
+				}
+			}
+			if(existValues){
+			// 初期値があれば初期値作成メソッドを作成する
+		@:
+		@:/// <summary>
+		@:/// 初期値を作成します。
+		@:/// </summary>
+		@:/// <returns></returns>
+		@:internal static @(Mod.Name)Entity[] GetInitialData()
+		@:{
+			// 初期値のリスト
+			var listName = "";
+			foreach(var field in Mod.FieldList){
+				// stringの場合引用符を入れる
+				var quotation = field.Type == "string" ? "\"" : "";
+				var comma = "";
+				if(field.ValueList.Count > 0){
+					listName = field.CamelPlural;
+					var initialValues = $"var {field.CamelPlural} = new {field.Type}[] " + "{ ";
+						foreach(var value in field.ValueList){
+							initialValues += comma + quotation + value.Value + quotation;
+							comma = ", ";
+						}
+					initialValues += "};";
+			@:@(initialValues)
+				}
+			}
+		@:	var result = new List<@(Mod.Name)Entity>();
+		@:	var order = 0;
+		@:	for (int i = 0; i < @(listName).Count(); i++)
+		@:	{
+		@:		order++;
+		@:		result.Add(new @(Mod.Name)Entity()
+		@:		{
+		@:			Order = order,
+			foreach(var field in Mod.FieldList){
+		@:			@(field.Pascal) = @(field.CamelPlural)[i],
+			}
+		@:		});
+		@:	}
+		@:	return result.ToArray();
+		@:}
+			}
+		}
+		
+		@:
+		@:public class MappingProfiler : Profile
+		@:{
+		@:	public MappingProfiler() => CreateMap<@(Mod.Pascal)Entity, @(Mod.Pascal)Model>(MemberList.Source)
+		@:		.ForMember(dest => dest.@(Mod.Pascal)Id, opt => opt.MapFrom(src => src.@(Mod.Pascal)Id))
+		@:		.ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
+		@:		.ForMember(dest => dest.Version, opt => opt.MapFrom(src => src.Version))
+		@:		.ForMember(dest => dest.UpdatedDate, opt => opt.MapFrom(src => TimeZoneInfo.ConvertTimeFromUtc(src.UpdatedDate, TZConvert.GetTimeZoneInfo("Tokyo Standard Time")).ToString("yyyy/MM/dd HH:mm:ss")))
+		@:		.ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy))
+		foreach(var field in Mod.FieldList){
+		@:		.ForMember(dest => dest.@(field.Pascal), opt => opt.MapFrom(src => src.@(field.Pascal)))
+		}
+		@:		;
+		@:}
+}	}
+}

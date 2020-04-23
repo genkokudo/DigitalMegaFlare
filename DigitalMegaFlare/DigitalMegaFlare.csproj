@@ -40,8 +40,6 @@
 
 
   <ItemGroup>
-    <Folder Include="wwwroot\files\excels\" />
-    <Folder Include="wwwroot\files\razors\react\crud\" />
     <Folder Include="wwwroot\files\uploadedExcels\" />
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\temp\" />
