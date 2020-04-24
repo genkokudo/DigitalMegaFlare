@@ -221,7 +221,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             else if (!string.IsNullOrWhiteSpace(query.SubName))
             {
                 // 子要素が残ってたらNGにする
-                var target = _db.RazorFiles.FirstOrDefault(x => x.Name == query.SubName && x.Razor == null && x.Parent != null);
+                var target = _db.RazorFiles.FirstOrDefault(x => x.Name == query.SubName && x.Razor == null && x.Parent != null && x.Parent.Name == query.MainName);
                 if(_db.RazorFiles.FirstOrDefault(x => x.Parent.Id == target.Id) == null)
                 {
                     _db.RazorFiles.Remove(target);
