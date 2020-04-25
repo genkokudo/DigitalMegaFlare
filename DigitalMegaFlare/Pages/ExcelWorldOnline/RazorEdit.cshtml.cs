@@ -167,7 +167,7 @@ namespace DigitalMegaFlare.Pages.ExcelWorldOnline
             }
 
             var data = _db.RazorFiles.First(x => x.Id == long.Parse(RazorId));
-            return File(data.Razor, "text/plain", data.Name + ".razor");
+            return File(data.Razor, "text/plain", data.Name + ".dat");
         }
     }
 
