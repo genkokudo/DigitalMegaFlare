@@ -1,6 +1,30 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
+﻿
+/* Razorエディタ */
+/* ▼ハイライト部分の装飾 */
+/* 黄色ハイライト用 */
+.mark1 {
+    background-color: yellow;
+}
+/* 緑色ハイライト用 */
+.mark2 {
+    background-color: lime;
+}
+/* 水色ハイライト用 */
+.mark3 {
+    background-color: #0ff;
+}
+.targetspace {
+    border: 2px solid #0a0; /* 枠線 */
+    border-radius: 0.67em; /* 角丸 */
+    padding: 0.5em; /* 内側余白 */
+    width: 100%; /* 横幅 */
+    box-sizing: border-box; /* はみ出しを防ぐ対策 */
+    background-color: #fff; /* 背景色 */
+    line-height: 1.6; /* 行の高さ */
+}
 
+
+/* 最初から書いてたもの */
 a.navbar-brand {
   white-space: normal;
   text-align: center;

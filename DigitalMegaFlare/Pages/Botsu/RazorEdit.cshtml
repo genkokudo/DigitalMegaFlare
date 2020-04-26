@@ -1,0 +1,213 @@
+﻿@page
+@model DigitalMegaFlare.Pages.ExcelWorldOnline.RazorEditModel
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "RazorEdit";
+    ViewData["RootList"] = Model.Data.Files[""];
+}
+@if (ViewBag.Message != null && !string.IsNullOrWhiteSpace(ViewBag.Message.ToString()))
+{
+    <div id="TopAlertMessage" class="row d-block">
+        <div role="alert" class="alert fade show alert-success alert-dismissible">
+            @ViewBag.Message
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    </div>
+}
+@if (ViewBag.Error != null && !string.IsNullOrWhiteSpace(ViewBag.Error.ToString()))
+{
+    <div id="TopAlert" class="row d-block">
+        <div role="alert" class="alert fade show alert-danger alert-dismissible">
+            @ViewBag.Error
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    </div>
+}
+
+@*
+    Razor部分にハイライトつけようと思ったけど諦めたソース 
+    Spaceや\tが無視される。
+    {}の検出はめっちゃ頑張ったらできそうだけどしんどいし↑が解決しないとやる気出ない。
+*@
+
+<div class="form-group">
+    <form method="post">
+        <div class="row">
+            <div class="col-6">
+                <h3>Razorテンプレート開発改造室</h3>
+            </div>
+            <div class="col-6">
+                <a href="./ExcelUpload" class="btn btn-primary btn-sm">Excel画面へ</a>
+                <button id="Delete" type="submit" asp-page-handler="Delete" class="btn btn-danger btn-sm float-right">削除</button>
+                <button id="Download" type="submit" asp-page-handler="Download" class="btn btn-success btn-sm float-right mr-5">ダウンロード</button>
+                <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-warning btn-sm float-right mr-5">更新</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <select id="SelectMainDirectory" asp-for="SelectMain" class="form-control">
+                    <option value="">----- 言語・ライブラリ -----</option>
+                </select>
+            </div>
+            <div class="col-4">
+                <select id="SelectSubDirectory" asp-for="SelectSub" class="form-control">
+                    <option value="">----- 分類 -----</option>
+                </select>
+            </div>
+            <div class="col-4">
+                <select id="SelectFile" asp-for="RazorId" class="form-control">
+                    <option value="">----- ファイル -----</option>
+                </select>
+            </div>
+        </div>
+
+        <textarea id="RazorScript" name="razorScript" placeholder="Razorスクリプト" class="form-control" TextMode="multiline" rows="36" style="font-size: 12px;">@ViewData["Script"]</textarea>
+        @*<div id="RazorScript" class="targetspace" contenteditable>
+            この枠内に表示されている文章に対して、指定の単語だけをハイライトします。ハイライトのON/OFFはボタンで切り替えられます。……
+        </div>*@
+
+        <input type="button" value="ハイライトON/OFF" id="btn-onoff">
+        <div class="row">
+            <div class="col d-flex  justify-content-end">
+                <input name="mainName" type="text" placeholder="メインフォルダ名" />
+                <input name="subName" type="text" placeholder="サブフォルダ名" />
+                <input name="fileName" type="text" placeholder="ファイル名（拡張子なし）" />
+                <button id="Update" type="submit" asp-page-handler="Update" class="btn btn-warning btn-sm">更新</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        var _files = @Html.Raw(JsonConvert.SerializeObject(Model.Data.Files));
+
+        // Razor部分のハイライト表示無理なので諦めた。
+
+        //var replaceAll2 = function(str, before, after) {
+        //    return str.split(before).join(after);
+        //};
+
+        //// ▼①元のHTMLソースを保持しておく変数
+        //var backupOriginal = "";
+        //// ▼②文字列を検索してハイライト用要素を加える処理
+        //function replacer( str, word , att  ) {
+        //    var SearchString = word;
+        //    //var SearchString = '(' + word + ')';
+        //    var RegularExp = new RegExp(SearchString, "g"); // 正規表現
+
+        //    var tempStr = str;
+        //    var result = str.match(RegularExp);
+        //    result.forEach((value) => {
+        //        console.log(value);
+        //        var ReplaceString = '<span class="' + att + '">' + value + '</span>';
+        //        tempStr = replaceAll2(tempStr, value, ReplaceString);
+        //    });
+
+        //    return tempStr;
+        //}
+        //// ▼③ハイライトを加える処理
+        //function addhighlight() {
+        //    backupOriginal = document.getElementById("RazorScript").innerHTML;
+        //    var forShow = backupOriginal;
+        //    forShow = forShow.replace(/\t/g, '    ');
+        //    forShow = forShow.replace(/\r\n/g, '<br>');
+        //    forShow = forShow.replace(/\r/g, '<br>');
+        //    forShow = forShow.replace(/\n/g, '<br>');
+        //    //forShow = replacer( forShow, "ハイライト", "mark1" );
+        //    //forShow = replacer( forShow, "文章", "mark2" );
+        //    forShow = replacer( forShow, "@@\\([A-Za-z0-9._-]+\\)", "mark3" );
+        //    document.getElementById("RazorScript").innerHTML = forShow;
+        //}
+        //// ▼④ハイライトを消す処理
+        //function clearhighlight() {
+        //    document.getElementById("RazorScript").innerHTML = backupOriginal;  // バックアップから書き戻す
+        //    backupOriginal = "";    // バックアップを消す
+        //}
+        //// ▼⑤ハイライトを加えるか消すかを判断
+        //function highlightcheck() {
+        //    if( backupOriginal.length == 0 ) {
+        //        // 何もバックアップされていなければ（未ハイライトなので）ハイライトを加える
+        //        addhighlight();
+        //    }
+        //    else {
+        //        // 何かバックアップされていれば（ハイライト済みなので）ハイライトを消す
+        //        clearhighlight();
+        //    }
+        //}
+        //// ▼⑥ボタンクリックイベントに、上記の関数を割り当てる
+        //document.getElementById("btn-onoff").onclick  = highlightcheck;
+
+
+
+        // ページを全て読み込み終わった後に実行する
+        $(window).on('load', function() {
+            _files[''].forEach((value) => {
+                $('#SelectMainDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+            });
+        });
+
+        // リストボックス：メイン
+        $('#SelectMainDirectory').on('change', function () {
+            // 取り除く
+            $('#SelectSubDirectory').children().remove();
+            $('#SelectFile').children().remove();
+            $('#SelectSubDirectory').append('<option value="">----- 分類 -----</option>');
+            $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+
+            // 選択肢のセット
+            if (this.value != '') {
+                _files[this.value].forEach((value) => {
+                    $('#SelectSubDirectory').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+                });
+            }
+        });
+
+        // リストボックス：サブ
+        $('#SelectSubDirectory').on('change', function () {
+            // 取り除く
+            $('#SelectFile').children().remove();
+            $('#SelectFile').append('<option value="">----- ファイル -----</option>');
+
+            // 選択肢のセット
+            if (this.value != '') {
+                _files[this.value].forEach((value) => {
+                    $('#SelectFile').append('<option value="' + value.Value + '">' + value.Text + '</option>');
+                });
+            }
+        });
+
+        // ファイル選択時、サーバからRazorを取得
+        $('#SelectFile').on('change', function () {
+            if (this.value != '') {
+                var formData = new FormData();
+                formData.append('razorId', this.value);
+                $.ajax({
+                    type: 'POST',
+                    url: '../Razor/Load',   // 相対パスであることに注意。動かしたらできなくなるぞ。
+                    contentType: false,
+                    processData: false,
+                    data: formData
+                }).then(
+                    function (data) {
+                        if (data != null && data.message != undefined) {
+                            $('#RazorScript').text(data.message);
+                        }
+                    },
+                    function (data) {
+                        alert('ファイルが取れなかった');
+                    }
+                );
+            }
+        });
+
+
+        // <button id="BtnA" class="btn btn-success btn-sm" key="1">Sample</button>
+        $('#Delete').on('click', function (e) {
+            if (!window.confirm('本当にいいんですね？')) {
+                // キャンセル時の処理
+                e.preventDefault();
+            }
+        });
+    </script>
+}
