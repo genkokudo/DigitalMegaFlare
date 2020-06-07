@@ -104,6 +104,21 @@ namespace DigitalMegaFlare
         // HTTPリクエストパイプラインの設定に使用する
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("X-Frame-Options", "deny");
+                context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
+                context.Response.Headers.Add("Pragma", "no-cache");
+
+                //Response.Cache.SetCacheability(HttpCacheability.NoCache);
+                //Response.Cache.AppendCacheExtension("no-store, must-revalidate");
+                //Response.AppendHeader("Pragma", "no-cache");
+                //Response.AppendHeader("Expires", "0");
+
+                await next.Invoke();
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
