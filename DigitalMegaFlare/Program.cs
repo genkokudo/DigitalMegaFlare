@@ -1,19 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using DigitalMegaFlare.Data;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using System;
 
 namespace DigitalMegaFlare
 {
@@ -21,16 +13,18 @@ namespace DigitalMegaFlare
     {
         public static void Main(string[] args)
         {
-            //CreateHostBuilder(args).Build().Run();
+            var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            Console.WriteLine($"現在の環境は{envName}です。");
 
-            // ここでもappsettings.jsonを読みたい
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true)
-                .Build();
+            //// ここでもappsettings.jsonを読みたい場合
+            //var config = new ConfigurationBuilder()
+            //    .SetBasePath(Directory.GetCurrentDirectory())
+            //    .AddJsonFile("appsettings.json", optional: true)
+            //    .AddJsonFile($"appsettings.{envName}.json")
+            //    .Build();
 
             // Webホスト作成
-            var host = CreateWebHostBuilder(args, config.GetValue<string>(SystemConstants.Port)).Build();
+            var host = CreateWebHostBuilder(args).Build();
 
             // DBに初期値を登録
             using (var scope = host.Services.CreateScope())
@@ -38,6 +32,7 @@ namespace DigitalMegaFlare
                 var services = scope.ServiceProvider;
                 try
                 {
+                    // DBをマイグレーションする
                     var context = services.GetRequiredService<ApplicationDbContext>();
                     context.Database.Migrate();
                     // マスタデータの初期化が必要な場合、こういうクラスを作成する
@@ -99,12 +94,11 @@ namespace DigitalMegaFlare
         /// <param name="args"></param>
         /// <param name="port">使用するポート</param>
         /// <returns></returns>
-        public static IHostBuilder CreateWebHostBuilder(string[] args, string port) =>
+        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("http://0.0.0.0:" + port);
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
@@ -116,26 +110,26 @@ namespace DigitalMegaFlare
                 // NLog を有効にする.
                 .UseNLog();
 
-        /// <summary>
-        /// このホスティングの方法だと、EFCoreのマイグレーションでエラーが出るため
-        /// このようなFactoryクラスを準備する
-        /// </summary>
-        public class ContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
-        {
-            public ApplicationDbContext CreateDbContext(string[] args)
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-                optionsBuilder.UseSqlServer("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;"
-                    );
+        ///// <summary>
+        ///// このホスティングの方法だと、EFCoreのマイグレーションでエラーが出るため
+        ///// このようなFactoryクラスを準備する
+        ///// </summary>
+        //public class ContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+        //{
+        //    public ApplicationDbContext CreateDbContext(string[] args)
+        //    {
+        //        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        //        optionsBuilder.UseSqlServer("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;"
+        //            );
 
-                //optionsBuilder.UseMySql("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;",
-                //    mySqlOptions =>
-                //    {
-                //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
-                //    }
-                //);
-                return new ApplicationDbContext(optionsBuilder.Options);
-            }
-        }
+        //        //optionsBuilder.UseMySql("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;",
+        //        //    mySqlOptions =>
+        //        //    {
+        //        //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
+        //        //    }
+        //        //);
+        //        return new ApplicationDbContext(optionsBuilder.Options);
+        //    }
+        //}
     }
 }

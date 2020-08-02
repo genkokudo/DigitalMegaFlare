@@ -33,17 +33,9 @@ namespace DigitalMegaFlare
         /// </summary>
         public IConfiguration Configuration { get; }
 
-        public Startup(IWebHostEnvironment env)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            //構成ファイル、環境変数等から、構成情報をロード
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: false, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            //構成情報をプロパティに設定
-            Configuration = builder.Build();    // IConfiguration configurationをインジェクションしない
+            Configuration = configuration;
             Environment = env;
         }
 
@@ -63,14 +55,6 @@ namespace DigitalMegaFlare
                     // SQLServerを使用する
                     options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection))
                 );
-
-                // MySQLの場合はこっち
-                //options.UseMySql(Configuration.GetConnectionString(SystemConstants.Connection),
-                //    mySqlOptions =>
-                //    {
-                //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
-                //    }
-                //));
             }
             else
             {
@@ -79,16 +63,6 @@ namespace DigitalMegaFlare
                     // SQLServerを使用する
                     options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";")
                 );
-
-                //// 本番系は接続先をappsettingsから、パスワードを環境変数から取得する
-                //// マイグレーションを行う場合、環境名は"Development"になり、環境変数から値が取れないのでここは使えない。
-                //services.AddDbContext<ApplicationDbContext>(options =>
-                //options.UseMySql(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";",
-                //    mySqlOptions =>
-                //    {
-                //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
-                //    }
-                //));
             }
             // デフォルトUI
             // UI画面を自作しない場合、この設定でデフォルトのRegisterページUIが設定される

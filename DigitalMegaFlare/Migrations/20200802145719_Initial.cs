@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DigitalMegaFlare.Migrations
@@ -48,11 +47,65 @@ namespace DigitalMegaFlare.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ExcelFiles",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IsLocked = table.Column<bool>(nullable: false),
+                    RawFileName = table.Column<string>(nullable: true),
+                    Comment = table.Column<string>(nullable: true),
+                    InputDate = table.Column<DateTime>(nullable: false),
+                    Host = table.Column<string>(nullable: true),
+                    Ip = table.Column<string>(nullable: true),
+                    Url = table.Column<string>(nullable: true),
+                    Xlsx = table.Column<byte[]>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExcelFiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RazorFiles",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ParentId = table.Column<long>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Razor = table.Column<byte[]>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RazorFiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RazorFiles_RazorFiles_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "RazorFiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TestDatas",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TestDatas", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -73,7 +126,7 @@ namespace DigitalMegaFlare.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -162,7 +215,8 @@ namespace DigitalMegaFlare.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -188,7 +242,13 @@ namespace DigitalMegaFlare.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RazorFiles_ParentId",
+                table: "RazorFiles",
+                column: "ParentId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -207,6 +267,15 @@ namespace DigitalMegaFlare.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "ExcelFiles");
+
+            migrationBuilder.DropTable(
+                name: "RazorFiles");
+
+            migrationBuilder.DropTable(
+                name: "TestDatas");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
