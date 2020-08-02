@@ -12,7 +12,7 @@ using DigitalMegaFlare.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+//using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using DigitalMegaFlare.Settings;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
@@ -60,24 +60,35 @@ namespace DigitalMegaFlare
             {
                 // 開発系はappsettingsから接続文字列とパスワードを取得する。
                 services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseMySql(Configuration.GetConnectionString(SystemConstants.Connection),
-                    mySqlOptions =>
-                    {
-                        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
-                    }
-                ));
+                    // SQLServerを使用する
+                    options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection))
+                );
+
+                // MySQLの場合はこっち
+                //options.UseMySql(Configuration.GetConnectionString(SystemConstants.Connection),
+                //    mySqlOptions =>
+                //    {
+                //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
+                //    }
+                //));
             }
             else
             {
                 // 本番系は接続先をappsettingsから、パスワードを環境変数から取得する
-                // マイグレーションを行う場合、環境名は"Development"になり、環境変数から値が取れないのでここは使えない。
                 services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseMySql(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";",
-                    mySqlOptions =>
-                    {
-                        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
-                    }
-                ));
+                    // SQLServerを使用する
+                    options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";")
+                );
+
+                //// 本番系は接続先をappsettingsから、パスワードを環境変数から取得する
+                //// マイグレーションを行う場合、環境名は"Development"になり、環境変数から値が取れないのでここは使えない。
+                //services.AddDbContext<ApplicationDbContext>(options =>
+                //options.UseMySql(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";",
+                //    mySqlOptions =>
+                //    {
+                //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
+                //    }
+                //));
             }
             // デフォルトUI
             // UI画面を自作しない場合、この設定でデフォルトのRegisterページUIが設定される
@@ -111,11 +122,6 @@ namespace DigitalMegaFlare
                 context.Response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
                 context.Response.Headers.Add("Pragma", "no-cache");
 
-                //Response.Cache.SetCacheability(HttpCacheability.NoCache);
-                //Response.Cache.AppendCacheExtension("no-store, must-revalidate");
-                //Response.AppendHeader("Pragma", "no-cache");
-                //Response.AppendHeader("Expires", "0");
-
                 await next.Invoke();
             });
 
@@ -133,9 +139,10 @@ namespace DigitalMegaFlare
                 //// 指定した URL でパイプラインを再実行するので UseRouting の前に呼ぶ必要がある
                 //app.UseStatusCodePagesWithReExecute("/Error/Index", "?statusCode={0}");
 
-                // 最初無かったけどエラー出たので追加した
-                // アプリをサーバのサブディレクトリに配置する
-                app.UsePathBase(Configuration.GetValue<string>(SystemConstants.PathBase));
+                // Azureにしたので削除
+                //// 最初無かったけどエラー出たので追加した
+                //// アプリをサーバのサブディレクトリに配置する
+                //app.UsePathBase(Configuration.GetValue<string>(SystemConstants.PathBase));
             }
 
             // HTTPをHTTPSにリダイレクトする

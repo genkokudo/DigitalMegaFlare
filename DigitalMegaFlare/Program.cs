@@ -125,12 +125,15 @@ namespace DigitalMegaFlare
             public ApplicationDbContext CreateDbContext(string[] args)
             {
                 var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-                optionsBuilder.UseMySql("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;",
-                    mySqlOptions =>
-                    {
-                        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
-                    }
-                );
+                optionsBuilder.UseSqlServer("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;"
+                    );
+
+                //optionsBuilder.UseMySql("Server=localhost;Database=digitalmegaflare;User Id=ginpay;Password=password;",
+                //    mySqlOptions =>
+                //    {
+                //        mySqlOptions.ServerVersion(new Version(10, 3, 13), ServerType.MariaDb);
+                //    }
+                //);
                 return new ApplicationDbContext(optionsBuilder.Options);
             }
         }
