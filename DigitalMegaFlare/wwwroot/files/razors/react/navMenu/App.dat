@@ -1,0 +1,53 @@
+import * as React from 'react';
+import { Route } from 'react-router';
+import Layout from './components/Layout';
+
+@foreach(var reducer in Model.NavList){
+    var component = reducer.Pascal;
+    var path = reducer.Path;
+    if(path != ""){
+        path = path.Trim('/');
+        path += "/";
+    }
+    var tsxPath = $"./components/{path}{reducer.Pascal}";
+    if(reducer.TsxName != ""){
+        // 画面ソース名（tsxとか）の指定がある場合
+        component = reducer.TsxPascal + reducer.Pascal;
+        tsxPath = $"./components{reducer.Path}/{reducer.Camel}/{reducer.TsxPascal}";
+    }
+@:import @(component) from '@(tsxPath)';
+}
+
+import './custom.css'
+
+/**
+ * index.tsxから呼び出される
+ * ここでデフォルトの画面表示を設定する
+ * 現在はLayout.tsxを呼び出すのみ
+ * ルーティングも設定する
+ */
+export default () => (
+    <Layout>
+        @foreach(var reducer in Model.NavList){
+        // コンポーネント名とパス作成
+        var component = reducer.Pascal;
+        var path = reducer.Path;
+        if(path != ""){
+            path = path.Trim('/');
+            path += "/";
+        }
+        var addressPath = $"/react/{path}{reducer.Hyphen}";
+        if(reducer.TsxName != ""){
+            // 画面ソース名（tsxとか）の指定がある場合
+            component = reducer.TsxPascal + reducer.Pascal;
+            addressPath = $"{addressPath}/{reducer.TsxHyphen}";
+        }
+
+        if(reducer.Args == ""){
+        @:<Route path='{@(addressPath)}' component={@(component)} />
+        }else{
+        @:<Route path='{@(addressPath)}' render={ props => <@(component) @(reducer.Args) {...props} />} />
+        }
+        }
+    </Layout>
+);

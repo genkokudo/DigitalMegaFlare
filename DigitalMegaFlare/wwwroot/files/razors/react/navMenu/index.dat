@@ -1,0 +1,26 @@
+@foreach(var reducer in Model.NavList){
+    var path = reducer.Path;
+    if(path != ""){
+        path = path.Trim('/');
+        path += "/";
+    }
+    var component = reducer.Pascal;
+    if(reducer.TsxName != ""){
+        // 画面ソース名（tsxとか）の指定がある場合
+        component = reducer.TsxPascal + reducer.Pascal;
+    }
+@:import { @(reducer.TsxPascal)@(reducer.Pascal)Module } from './@(path)@(component)';
+}
+
+// アクションがディスパッチされるたびに、Reduxは、名前が一致するREDUCERを使用して各トップレベルのアプリケーション状態プロパティを更新します。
+// 名前が正確に一致すること、およびREDUCERが重要です。
+export const reducers = {
+    @foreach(var reducer in Model.NavList){
+    var state = reducer.Camel;
+    if(reducer.TsxName != ""){
+        // 画面ソース名（tsxとか）の指定がある場合
+        state = reducer.TsxCamel + reducer.Pascal;
+    }
+    @:@(state): @(reducer.TsxPascal)@(reducer.Pascal)Module.reducer,
+    }
+};
