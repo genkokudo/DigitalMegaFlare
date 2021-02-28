@@ -59,10 +59,11 @@ namespace DigitalMegaFlare
             else
             {
                 // 本番系は接続先をappsettingsから、パスワードを環境変数から取得する
+                // SQLServerを使用する
                 services.AddDbContext<ApplicationDbContext>(options =>
-                    // SQLServerを使用する
-                    options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";")
-                );
+                    options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection)));
+                //options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.Connection) + "Password=" + Configuration.GetValue<string>(SystemConstants.DbPasswordEnv) + ";")
+                //);
             }
             // デフォルトUI
             // UI画面を自作しない場合、この設定でデフォルトのRegisterページUIが設定される
