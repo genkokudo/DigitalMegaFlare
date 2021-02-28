@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DigitalMegaFlare.Models
 {
-    public class TestData
+    public class TestData : UserData
     {
         [Key]
         public long Id { get; set; }
